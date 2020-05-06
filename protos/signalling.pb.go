@@ -200,6 +200,155 @@ func (m *User) GetPhoto() string {
 	return ""
 }
 
+type Users struct {
+	Users                []*User  `protobuf:"bytes,1,rep,name=users,proto3" json:"users,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Users) Reset()         { *m = Users{} }
+func (m *Users) String() string { return proto.CompactTextString(m) }
+func (*Users) ProtoMessage()    {}
+func (*Users) Descriptor() ([]byte, []int) {
+	return fileDescriptor_39f66308029891ad, []int{3}
+}
+
+func (m *Users) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Users.Unmarshal(m, b)
+}
+func (m *Users) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Users.Marshal(b, m, deterministic)
+}
+func (m *Users) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Users.Merge(m, src)
+}
+func (m *Users) XXX_Size() int {
+	return xxx_messageInfo_Users.Size(m)
+}
+func (m *Users) XXX_DiscardUnknown() {
+	xxx_messageInfo_Users.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Users proto.InternalMessageInfo
+
+func (m *Users) GetUsers() []*User {
+	if m != nil {
+		return m.Users
+	}
+	return nil
+}
+
+type UpdateUserProfileParam struct {
+	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name                 string   `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Photo                string   `protobuf:"bytes,3,opt,name=photo,proto3" json:"photo,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *UpdateUserProfileParam) Reset()         { *m = UpdateUserProfileParam{} }
+func (m *UpdateUserProfileParam) String() string { return proto.CompactTextString(m) }
+func (*UpdateUserProfileParam) ProtoMessage()    {}
+func (*UpdateUserProfileParam) Descriptor() ([]byte, []int) {
+	return fileDescriptor_39f66308029891ad, []int{4}
+}
+
+func (m *UpdateUserProfileParam) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UpdateUserProfileParam.Unmarshal(m, b)
+}
+func (m *UpdateUserProfileParam) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UpdateUserProfileParam.Marshal(b, m, deterministic)
+}
+func (m *UpdateUserProfileParam) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdateUserProfileParam.Merge(m, src)
+}
+func (m *UpdateUserProfileParam) XXX_Size() int {
+	return xxx_messageInfo_UpdateUserProfileParam.Size(m)
+}
+func (m *UpdateUserProfileParam) XXX_DiscardUnknown() {
+	xxx_messageInfo_UpdateUserProfileParam.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UpdateUserProfileParam proto.InternalMessageInfo
+
+func (m *UpdateUserProfileParam) GetId() string {
+	if m != nil {
+		return m.Id
+	}
+	return ""
+}
+
+func (m *UpdateUserProfileParam) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *UpdateUserProfileParam) GetPhoto() string {
+	if m != nil {
+		return m.Photo
+	}
+	return ""
+}
+
+type UpdateProfileParam struct {
+	Name                 string   `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Photo                string   `protobuf:"bytes,3,opt,name=photo,proto3" json:"photo,omitempty"`
+	Description          string   `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *UpdateProfileParam) Reset()         { *m = UpdateProfileParam{} }
+func (m *UpdateProfileParam) String() string { return proto.CompactTextString(m) }
+func (*UpdateProfileParam) ProtoMessage()    {}
+func (*UpdateProfileParam) Descriptor() ([]byte, []int) {
+	return fileDescriptor_39f66308029891ad, []int{5}
+}
+
+func (m *UpdateProfileParam) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UpdateProfileParam.Unmarshal(m, b)
+}
+func (m *UpdateProfileParam) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UpdateProfileParam.Marshal(b, m, deterministic)
+}
+func (m *UpdateProfileParam) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdateProfileParam.Merge(m, src)
+}
+func (m *UpdateProfileParam) XXX_Size() int {
+	return xxx_messageInfo_UpdateProfileParam.Size(m)
+}
+func (m *UpdateProfileParam) XXX_DiscardUnknown() {
+	xxx_messageInfo_UpdateProfileParam.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UpdateProfileParam proto.InternalMessageInfo
+
+func (m *UpdateProfileParam) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *UpdateProfileParam) GetPhoto() string {
+	if m != nil {
+		return m.Photo
+	}
+	return ""
+}
+
+func (m *UpdateProfileParam) GetDescription() string {
+	if m != nil {
+		return m.Description
+	}
+	return ""
+}
+
 type Profile struct {
 	Id                   string       `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name                 string       `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
@@ -214,7 +363,7 @@ func (m *Profile) Reset()         { *m = Profile{} }
 func (m *Profile) String() string { return proto.CompactTextString(m) }
 func (*Profile) ProtoMessage()    {}
 func (*Profile) Descriptor() ([]byte, []int) {
-	return fileDescriptor_39f66308029891ad, []int{3}
+	return fileDescriptor_39f66308029891ad, []int{6}
 }
 
 func (m *Profile) XXX_Unmarshal(b []byte) error {
@@ -279,7 +428,7 @@ func (m *ICEServer) Reset()         { *m = ICEServer{} }
 func (m *ICEServer) String() string { return proto.CompactTextString(m) }
 func (*ICEServer) ProtoMessage()    {}
 func (*ICEServer) Descriptor() ([]byte, []int) {
-	return fileDescriptor_39f66308029891ad, []int{4}
+	return fileDescriptor_39f66308029891ad, []int{7}
 }
 
 func (m *ICEServer) XXX_Unmarshal(b []byte) error {
@@ -353,7 +502,7 @@ func (m *UserAccessToken) Reset()         { *m = UserAccessToken{} }
 func (m *UserAccessToken) String() string { return proto.CompactTextString(m) }
 func (*UserAccessToken) ProtoMessage()    {}
 func (*UserAccessToken) Descriptor() ([]byte, []int) {
-	return fileDescriptor_39f66308029891ad, []int{5}
+	return fileDescriptor_39f66308029891ad, []int{8}
 }
 
 func (m *UserAccessToken) XXX_Unmarshal(b []byte) error {
@@ -396,7 +545,7 @@ func (m *NewRoomParam) Reset()         { *m = NewRoomParam{} }
 func (m *NewRoomParam) String() string { return proto.CompactTextString(m) }
 func (*NewRoomParam) ProtoMessage()    {}
 func (*NewRoomParam) Descriptor() ([]byte, []int) {
-	return fileDescriptor_39f66308029891ad, []int{6}
+	return fileDescriptor_39f66308029891ad, []int{9}
 }
 
 func (m *NewRoomParam) XXX_Unmarshal(b []byte) error {
@@ -457,7 +606,7 @@ type Room struct {
 	Name                 string   `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Photo                string   `protobuf:"bytes,3,opt,name=photo,proto3" json:"photo,omitempty"`
 	Description          string   `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
-	UserIDs              []*User  `protobuf:"bytes,5,rep,name=userIDs,proto3" json:"userIDs,omitempty"`
+	Users                []*User  `protobuf:"bytes,5,rep,name=users,proto3" json:"users,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -467,7 +616,7 @@ func (m *Room) Reset()         { *m = Room{} }
 func (m *Room) String() string { return proto.CompactTextString(m) }
 func (*Room) ProtoMessage()    {}
 func (*Room) Descriptor() ([]byte, []int) {
-	return fileDescriptor_39f66308029891ad, []int{7}
+	return fileDescriptor_39f66308029891ad, []int{10}
 }
 
 func (m *Room) XXX_Unmarshal(b []byte) error {
@@ -516,11 +665,74 @@ func (m *Room) GetDescription() string {
 	return ""
 }
 
-func (m *Room) GetUserIDs() []*User {
+func (m *Room) GetUsers() []*User {
 	if m != nil {
-		return m.UserIDs
+		return m.Users
 	}
 	return nil
+}
+
+type UpdateRoomProfileParam struct {
+	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name                 string   `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Photo                string   `protobuf:"bytes,3,opt,name=photo,proto3" json:"photo,omitempty"`
+	Description          string   `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *UpdateRoomProfileParam) Reset()         { *m = UpdateRoomProfileParam{} }
+func (m *UpdateRoomProfileParam) String() string { return proto.CompactTextString(m) }
+func (*UpdateRoomProfileParam) ProtoMessage()    {}
+func (*UpdateRoomProfileParam) Descriptor() ([]byte, []int) {
+	return fileDescriptor_39f66308029891ad, []int{11}
+}
+
+func (m *UpdateRoomProfileParam) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UpdateRoomProfileParam.Unmarshal(m, b)
+}
+func (m *UpdateRoomProfileParam) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UpdateRoomProfileParam.Marshal(b, m, deterministic)
+}
+func (m *UpdateRoomProfileParam) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdateRoomProfileParam.Merge(m, src)
+}
+func (m *UpdateRoomProfileParam) XXX_Size() int {
+	return xxx_messageInfo_UpdateRoomProfileParam.Size(m)
+}
+func (m *UpdateRoomProfileParam) XXX_DiscardUnknown() {
+	xxx_messageInfo_UpdateRoomProfileParam.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UpdateRoomProfileParam proto.InternalMessageInfo
+
+func (m *UpdateRoomProfileParam) GetId() string {
+	if m != nil {
+		return m.Id
+	}
+	return ""
+}
+
+func (m *UpdateRoomProfileParam) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *UpdateRoomProfileParam) GetPhoto() string {
+	if m != nil {
+		return m.Photo
+	}
+	return ""
+}
+
+func (m *UpdateRoomProfileParam) GetDescription() string {
+	if m != nil {
+		return m.Description
+	}
+	return ""
 }
 
 type Rooms struct {
@@ -534,7 +746,7 @@ func (m *Rooms) Reset()         { *m = Rooms{} }
 func (m *Rooms) String() string { return proto.CompactTextString(m) }
 func (*Rooms) ProtoMessage()    {}
 func (*Rooms) Descriptor() ([]byte, []int) {
-	return fileDescriptor_39f66308029891ad, []int{8}
+	return fileDescriptor_39f66308029891ad, []int{12}
 }
 
 func (m *Rooms) XXX_Unmarshal(b []byte) error {
@@ -574,7 +786,7 @@ func (m *UserRoomParam) Reset()         { *m = UserRoomParam{} }
 func (m *UserRoomParam) String() string { return proto.CompactTextString(m) }
 func (*UserRoomParam) ProtoMessage()    {}
 func (*UserRoomParam) Descriptor() ([]byte, []int) {
-	return fileDescriptor_39f66308029891ad, []int{9}
+	return fileDescriptor_39f66308029891ad, []int{13}
 }
 
 func (m *UserRoomParam) XXX_Unmarshal(b []byte) error {
@@ -620,7 +832,7 @@ func (m *GetRoomParam) Reset()         { *m = GetRoomParam{} }
 func (m *GetRoomParam) String() string { return proto.CompactTextString(m) }
 func (*GetRoomParam) ProtoMessage()    {}
 func (*GetRoomParam) Descriptor() ([]byte, []int) {
-	return fileDescriptor_39f66308029891ad, []int{10}
+	return fileDescriptor_39f66308029891ad, []int{14}
 }
 
 func (m *GetRoomParam) XXX_Unmarshal(b []byte) error {
@@ -648,51 +860,59 @@ func (m *GetRoomParam) GetId() string {
 	return ""
 }
 
-type GetRoomsParam struct {
+type PaginationParam struct {
 	Offset               int32    `protobuf:"varint,1,opt,name=offset,proto3" json:"offset,omitempty"`
 	Limit                int32    `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+	Keyword              string   `protobuf:"bytes,3,opt,name=keyword,proto3" json:"keyword,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *GetRoomsParam) Reset()         { *m = GetRoomsParam{} }
-func (m *GetRoomsParam) String() string { return proto.CompactTextString(m) }
-func (*GetRoomsParam) ProtoMessage()    {}
-func (*GetRoomsParam) Descriptor() ([]byte, []int) {
-	return fileDescriptor_39f66308029891ad, []int{11}
+func (m *PaginationParam) Reset()         { *m = PaginationParam{} }
+func (m *PaginationParam) String() string { return proto.CompactTextString(m) }
+func (*PaginationParam) ProtoMessage()    {}
+func (*PaginationParam) Descriptor() ([]byte, []int) {
+	return fileDescriptor_39f66308029891ad, []int{15}
 }
 
-func (m *GetRoomsParam) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_GetRoomsParam.Unmarshal(m, b)
+func (m *PaginationParam) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_PaginationParam.Unmarshal(m, b)
 }
-func (m *GetRoomsParam) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_GetRoomsParam.Marshal(b, m, deterministic)
+func (m *PaginationParam) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_PaginationParam.Marshal(b, m, deterministic)
 }
-func (m *GetRoomsParam) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetRoomsParam.Merge(m, src)
+func (m *PaginationParam) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PaginationParam.Merge(m, src)
 }
-func (m *GetRoomsParam) XXX_Size() int {
-	return xxx_messageInfo_GetRoomsParam.Size(m)
+func (m *PaginationParam) XXX_Size() int {
+	return xxx_messageInfo_PaginationParam.Size(m)
 }
-func (m *GetRoomsParam) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetRoomsParam.DiscardUnknown(m)
+func (m *PaginationParam) XXX_DiscardUnknown() {
+	xxx_messageInfo_PaginationParam.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_GetRoomsParam proto.InternalMessageInfo
+var xxx_messageInfo_PaginationParam proto.InternalMessageInfo
 
-func (m *GetRoomsParam) GetOffset() int32 {
+func (m *PaginationParam) GetOffset() int32 {
 	if m != nil {
 		return m.Offset
 	}
 	return 0
 }
 
-func (m *GetRoomsParam) GetLimit() int32 {
+func (m *PaginationParam) GetLimit() int32 {
 	if m != nil {
 		return m.Limit
 	}
 	return 0
+}
+
+func (m *PaginationParam) GetKeyword() string {
+	if m != nil {
+		return m.Keyword
+	}
+	return ""
 }
 
 type SDP struct {
@@ -707,7 +927,7 @@ func (m *SDP) Reset()         { *m = SDP{} }
 func (m *SDP) String() string { return proto.CompactTextString(m) }
 func (*SDP) ProtoMessage()    {}
 func (*SDP) Descriptor() ([]byte, []int) {
-	return fileDescriptor_39f66308029891ad, []int{12}
+	return fileDescriptor_39f66308029891ad, []int{16}
 }
 
 func (m *SDP) XXX_Unmarshal(b []byte) error {
@@ -754,7 +974,7 @@ func (m *SDPParam) Reset()         { *m = SDPParam{} }
 func (m *SDPParam) String() string { return proto.CompactTextString(m) }
 func (*SDPParam) ProtoMessage()    {}
 func (*SDPParam) Descriptor() ([]byte, []int) {
-	return fileDescriptor_39f66308029891ad, []int{13}
+	return fileDescriptor_39f66308029891ad, []int{17}
 }
 
 func (m *SDPParam) XXX_Unmarshal(b []byte) error {
@@ -802,7 +1022,7 @@ func (m *UserJoinLeaveRoomEvent) Reset()         { *m = UserJoinLeaveRoomEvent{}
 func (m *UserJoinLeaveRoomEvent) String() string { return proto.CompactTextString(m) }
 func (*UserJoinLeaveRoomEvent) ProtoMessage()    {}
 func (*UserJoinLeaveRoomEvent) Descriptor() ([]byte, []int) {
-	return fileDescriptor_39f66308029891ad, []int{14}
+	return fileDescriptor_39f66308029891ad, []int{18}
 }
 
 func (m *UserJoinLeaveRoomEvent) XXX_Unmarshal(b []byte) error {
@@ -849,15 +1069,19 @@ func init() {
 	proto.RegisterType((*NewUserParam)(nil), "protos.NewUserParam")
 	proto.RegisterType((*GetUserParam)(nil), "protos.GetUserParam")
 	proto.RegisterType((*User)(nil), "protos.User")
+	proto.RegisterType((*Users)(nil), "protos.Users")
+	proto.RegisterType((*UpdateUserProfileParam)(nil), "protos.UpdateUserProfileParam")
+	proto.RegisterType((*UpdateProfileParam)(nil), "protos.UpdateProfileParam")
 	proto.RegisterType((*Profile)(nil), "protos.Profile")
 	proto.RegisterType((*ICEServer)(nil), "protos.ICEServer")
 	proto.RegisterType((*UserAccessToken)(nil), "protos.UserAccessToken")
 	proto.RegisterType((*NewRoomParam)(nil), "protos.NewRoomParam")
 	proto.RegisterType((*Room)(nil), "protos.Room")
+	proto.RegisterType((*UpdateRoomProfileParam)(nil), "protos.UpdateRoomProfileParam")
 	proto.RegisterType((*Rooms)(nil), "protos.Rooms")
 	proto.RegisterType((*UserRoomParam)(nil), "protos.UserRoomParam")
 	proto.RegisterType((*GetRoomParam)(nil), "protos.GetRoomParam")
-	proto.RegisterType((*GetRoomsParam)(nil), "protos.GetRoomsParam")
+	proto.RegisterType((*PaginationParam)(nil), "protos.PaginationParam")
 	proto.RegisterType((*SDP)(nil), "protos.SDP")
 	proto.RegisterType((*SDPParam)(nil), "protos.SDPParam")
 	proto.RegisterType((*UserJoinLeaveRoomEvent)(nil), "protos.UserJoinLeaveRoomEvent")
@@ -866,63 +1090,70 @@ func init() {
 func init() { proto.RegisterFile("signalling.proto", fileDescriptor_39f66308029891ad) }
 
 var fileDescriptor_39f66308029891ad = []byte{
-	// 883 bytes of a gzipped FileDescriptorProto
+	// 996 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x56, 0x5b, 0x6f, 0xe3, 0x44,
-	0x14, 0xce, 0xcd, 0xbd, 0x9c, 0xa4, 0xdd, 0x74, 0xd4, 0xed, 0x9a, 0x20, 0x76, 0xab, 0x79, 0x80,
-	0x8a, 0x45, 0xe9, 0xe2, 0xe5, 0x22, 0x04, 0x08, 0xa2, 0x3a, 0xbb, 0x5b, 0x96, 0xa5, 0x91, 0x9d,
-	0x15, 0x4f, 0x3c, 0xb8, 0xc9, 0x49, 0xb0, 0x1a, 0x7b, 0xac, 0x99, 0x69, 0x4b, 0xde, 0x79, 0xe2,
-	0x27, 0xf1, 0x33, 0xf8, 0x05, 0xfc, 0x14, 0x34, 0x33, 0x76, 0x3a, 0x6e, 0x30, 0xa2, 0x54, 0x3c,
-	0x65, 0xce, 0xe5, 0x3b, 0x97, 0x6f, 0xce, 0x1c, 0x07, 0xba, 0x22, 0x9e, 0xa7, 0xd1, 0x62, 0x11,
-	0xa7, 0xf3, 0x7e, 0xc6, 0x99, 0x64, 0x64, 0x43, 0xff, 0x88, 0xde, 0xbb, 0x73, 0xc6, 0xe6, 0x0b,
-	0x3c, 0xd6, 0xe2, 0xf9, 0xe5, 0xec, 0x18, 0x93, 0x4c, 0x2e, 0x8d, 0x53, 0xef, 0xc9, 0x6d, 0xa3,
-	0x8c, 0x13, 0x14, 0x32, 0x4a, 0x32, 0xe3, 0x40, 0x5f, 0x41, 0xe7, 0x07, 0xbc, 0x7e, 0x2b, 0x90,
-	0x8f, 0x22, 0x1e, 0x25, 0x64, 0x17, 0x1a, 0xf1, 0xd4, 0xad, 0x1f, 0xd6, 0x8f, 0xb6, 0x83, 0x46,
-	0x3c, 0x25, 0x04, 0x5a, 0x69, 0x94, 0xa0, 0xdb, 0xd0, 0x1a, 0x7d, 0x26, 0xfb, 0xe0, 0x64, 0x3f,
-	0x33, 0xc9, 0xdc, 0xa6, 0x56, 0x1a, 0x81, 0x3e, 0x86, 0xce, 0x4b, 0x94, 0x95, 0x91, 0xe8, 0xb7,
-	0xd0, 0x52, 0xc6, 0x7b, 0x64, 0xc8, 0x60, 0x73, 0xc4, 0xd9, 0x2c, 0x5e, 0xe0, 0x7f, 0x0f, 0x42,
-	0x9e, 0xc2, 0xa6, 0x40, 0x7e, 0x85, 0x5c, 0xb8, 0xad, 0xc3, 0xe6, 0x51, 0xdb, 0xdb, 0x33, 0x4c,
-	0x88, 0xfe, 0xe9, 0xc9, 0x30, 0xd4, 0x96, 0xa0, 0xf0, 0xa0, 0x7f, 0xd4, 0x61, 0x7b, 0xa5, 0x26,
-	0x5d, 0x68, 0x5e, 0xf2, 0x45, 0x9e, 0x55, 0x1d, 0x49, 0x0f, 0xb6, 0x2e, 0x05, 0x72, 0x2b, 0xf5,
-	0x4a, 0x26, 0x03, 0xd8, 0x9d, 0x70, 0x9c, 0x62, 0x2a, 0xe3, 0x68, 0x31, 0x5e, 0x66, 0xa8, 0xeb,
-	0xd8, 0xf5, 0xde, 0xb1, 0xf2, 0x9d, 0x94, 0x1c, 0x82, 0x5b, 0x00, 0x15, 0x3e, 0x8b, 0x84, 0xb8,
-	0x66, 0x7c, 0xea, 0xb6, 0x4c, 0xf8, 0x42, 0x26, 0x87, 0xd0, 0x8e, 0x26, 0x13, 0x14, 0x62, 0xcc,
-	0x2e, 0x30, 0x75, 0x1d, 0x6d, 0xb6, 0x55, 0xe4, 0x00, 0x36, 0x92, 0x68, 0xf2, 0x1a, 0x97, 0xee,
-	0x86, 0x36, 0xe6, 0x12, 0xfd, 0x00, 0x1e, 0xa8, 0x8b, 0x18, 0x58, 0xae, 0xfb, 0xe0, 0x48, 0x1d,
-	0xc6, 0xf4, 0x66, 0x04, 0xfa, 0x6b, 0x5d, 0x0f, 0x47, 0xc0, 0x58, 0x72, 0xcf, 0xe1, 0x50, 0xd5,
-	0x4e, 0x51, 0x4c, 0x78, 0x9c, 0xc9, 0x98, 0xa5, 0x79, 0x33, 0xb6, 0x8a, 0xb8, 0xb0, 0xa9, 0xa8,
-	0x3b, 0xf5, 0x85, 0xeb, 0x1c, 0x36, 0x8f, 0xb6, 0x83, 0x42, 0xa4, 0xbf, 0xd5, 0xa1, 0xa5, 0x6a,
-	0xf8, 0x5f, 0xd3, 0xbf, 0x5f, 0x4e, 0xdf, 0xf6, 0x3a, 0xc5, 0x35, 0x29, 0xae, 0x6e, 0x8a, 0x79,
-	0x0a, 0x8e, 0xaa, 0x45, 0x10, 0x0a, 0x0e, 0x57, 0x07, 0xb7, 0x5e, 0x76, 0x57, 0xd6, 0xc0, 0x98,
-	0xe8, 0x37, 0xb0, 0xa3, 0xd1, 0x2b, 0x02, 0x0f, 0x60, 0xc3, 0x04, 0xca, 0xbb, 0xc8, 0x25, 0xa5,
-	0x57, 0x88, 0x53, 0x3f, 0xef, 0x25, 0x97, 0xf2, 0x37, 0x55, 0x79, 0x01, 0xf4, 0x6b, 0xd8, 0xc9,
-	0xed, 0x62, 0x95, 0x80, 0xcd, 0x66, 0x02, 0xa5, 0x76, 0x72, 0x82, 0x5c, 0x52, 0xb4, 0x2c, 0xe2,
-	0x24, 0x96, 0x3a, 0xbe, 0x13, 0x18, 0x81, 0x7e, 0x09, 0xcd, 0xd0, 0x1f, 0x29, 0x1e, 0xa5, 0x9a,
-	0x4f, 0x13, 0x57, 0x9f, 0x6f, 0x33, 0xd6, 0x58, 0x63, 0x8c, 0x0e, 0x60, 0x2b, 0xf4, 0x47, 0x26,
-	0xed, 0x7b, 0xd0, 0x14, 0xd3, 0x4c, 0x07, 0x68, 0x7b, 0xed, 0x82, 0x8a, 0xd0, 0x1f, 0x05, 0x4a,
-	0x6f, 0xb5, 0xdd, 0xb0, 0xdb, 0xa6, 0xbf, 0xc0, 0x81, 0xe2, 0xe7, 0x3b, 0x16, 0xa7, 0xdf, 0x63,
-	0x74, 0x85, 0xaa, 0x91, 0xe1, 0x15, 0xa6, 0xf2, 0xae, 0x44, 0x91, 0x3e, 0xb4, 0xd4, 0x66, 0xd3,
-	0xb7, 0xde, 0xf6, 0x7a, 0x7d, 0xb3, 0xf6, 0xfa, 0xc5, 0xda, 0xeb, 0x8f, 0x8b, 0xb5, 0x17, 0x68,
-	0xbf, 0x0f, 0x3f, 0x82, 0xbd, 0xb5, 0xe7, 0x47, 0x3a, 0xb0, 0x35, 0x1a, 0x84, 0xe1, 0x8f, 0x67,
-	0x81, 0xdf, 0xad, 0x91, 0x6d, 0x70, 0xce, 0x06, 0x6f, 0xc7, 0xaf, 0xba, 0x75, 0xef, 0xf7, 0x16,
-	0x3c, 0x54, 0xb5, 0xbd, 0x89, 0xd2, 0x68, 0x8e, 0x09, 0xa6, 0x52, 0x6d, 0x84, 0x78, 0x82, 0xe4,
-	0x13, 0xe8, 0x04, 0x38, 0x8f, 0x85, 0x44, 0xae, 0x97, 0xdb, 0x7e, 0xd1, 0xbb, 0xbd, 0x54, 0x7b,
-	0xa5, 0x59, 0xa2, 0x35, 0x72, 0x0c, 0x9b, 0xf9, 0xaa, 0xbc, 0x01, 0xd8, 0xbb, 0x73, 0x0d, 0x30,
-	0x04, 0x92, 0xdb, 0x4b, 0xaf, 0xf6, 0x6f, 0xb1, 0x8f, 0x6c, 0xac, 0xe5, 0x4e, 0x6b, 0xc4, 0x03,
-	0x08, 0x30, 0x61, 0x57, 0x78, 0x87, 0xd4, 0x1e, 0xc0, 0x09, 0xc7, 0x48, 0xea, 0xcb, 0x29, 0xf5,
-	0xb7, 0x1a, 0xcb, 0x5e, 0x69, 0xf8, 0x69, 0x8d, 0x7c, 0xac, 0xfb, 0xd3, 0x80, 0x87, 0x56, 0x92,
-	0x9b, 0x39, 0xed, 0xed, 0xd8, 0x08, 0x41, 0x6b, 0xe4, 0x19, 0x6c, 0x15, 0x1e, 0xa5, 0xc2, 0xaa,
-	0x93, 0x7c, 0x06, 0x3b, 0x83, 0xe9, 0x54, 0x55, 0x39, 0x66, 0xe5, 0x54, 0xa5, 0x37, 0xb7, 0x86,
-	0xfb, 0x02, 0xba, 0xaf, 0xe3, 0xc9, 0x85, 0x72, 0x7a, 0xc1, 0x59, 0x72, 0x17, 0xe8, 0x73, 0x68,
-	0xfb, 0x28, 0x24, 0x67, 0xcb, 0x32, 0x19, 0xff, 0x54, 0xa7, 0xf7, 0x67, 0x13, 0xf6, 0xc2, 0xd5,
-	0xc7, 0xbb, 0x18, 0x9c, 0xcf, 0x01, 0x5e, 0xa2, 0x2c, 0x3e, 0x67, 0x07, 0x6b, 0x03, 0x3b, 0x54,
-	0x1f, 0xf1, 0xde, 0x83, 0x22, 0x56, 0xee, 0x48, 0x6b, 0xe4, 0x53, 0x0d, 0x7c, 0xb3, 0x34, 0x54,
-	0x55, 0x01, 0xd7, 0xf8, 0x3d, 0xbe, 0xb9, 0x92, 0x7f, 0x47, 0xef, 0x10, 0x1e, 0x9d, 0xcd, 0x66,
-	0xc8, 0x43, 0x14, 0x22, 0x66, 0xa9, 0x6f, 0xed, 0xca, 0xae, 0xf5, 0xc0, 0x0d, 0xb8, 0xa2, 0x0c,
-	0x5a, 0x23, 0x2f, 0xc0, 0x1d, 0xa4, 0xe2, 0xfa, 0xde, 0x71, 0xbe, 0x82, 0xbd, 0xf0, 0xf2, 0x5c,
-	0x61, 0xcf, 0x31, 0xf4, 0x47, 0xf9, 0x96, 0xa8, 0xe8, 0xde, 0xde, 0x40, 0xb4, 0xf6, 0xac, 0x4e,
-	0x7e, 0x82, 0x27, 0x2b, 0x74, 0xd5, 0xc6, 0xa9, 0x88, 0xf5, 0xd8, 0x1e, 0x8d, 0x75, 0x9c, 0x0a,
-	0x7f, 0x6e, 0xfe, 0x8a, 0x3d, 0xff, 0x2b, 0x00, 0x00, 0xff, 0xff, 0xd7, 0x93, 0x91, 0x98, 0xa5,
-	0x09, 0x00, 0x00,
+	0x14, 0xce, 0xcd, 0xbd, 0x9c, 0xa4, 0x6d, 0x32, 0xea, 0xa6, 0x26, 0x88, 0x6e, 0x35, 0x2f, 0x54,
+	0x14, 0xa5, 0xab, 0x74, 0xb5, 0x08, 0x81, 0x80, 0xa8, 0xc9, 0xee, 0x96, 0x65, 0x69, 0x64, 0xa7,
+	0x42, 0x3c, 0x20, 0xe1, 0xc6, 0x93, 0x60, 0x35, 0xf6, 0x58, 0x9e, 0x69, 0x4b, 0xde, 0x11, 0xff,
+	0x83, 0xbf, 0xc4, 0xef, 0xe1, 0x01, 0xcd, 0x8c, 0xed, 0x1d, 0xdb, 0x35, 0xdd, 0x52, 0x78, 0xf2,
+	0x9c, 0x39, 0xf7, 0x6f, 0xce, 0xc5, 0xd0, 0x66, 0xde, 0x22, 0x70, 0x96, 0x4b, 0x2f, 0x58, 0xf4,
+	0xc3, 0x88, 0x72, 0x8a, 0xd6, 0xe4, 0x87, 0xf5, 0x3e, 0x5c, 0x50, 0xba, 0x58, 0x92, 0x63, 0x49,
+	0x5e, 0x5e, 0xcf, 0x8f, 0x89, 0x1f, 0xf2, 0x95, 0x12, 0xea, 0x3d, 0xcd, 0x33, 0xb9, 0xe7, 0x13,
+	0xc6, 0x1d, 0x3f, 0x54, 0x02, 0xf8, 0x35, 0xb4, 0xbe, 0x27, 0xb7, 0x17, 0x8c, 0x44, 0x13, 0x27,
+	0x72, 0x7c, 0xb4, 0x0d, 0x35, 0xcf, 0x35, 0xab, 0x07, 0xd5, 0xc3, 0x4d, 0xab, 0xe6, 0xb9, 0x08,
+	0x41, 0x23, 0x70, 0x7c, 0x62, 0xd6, 0xe4, 0x8d, 0x3c, 0xa3, 0x5d, 0x30, 0xc2, 0x5f, 0x28, 0xa7,
+	0x66, 0x5d, 0x5e, 0x2a, 0x02, 0xef, 0x43, 0xeb, 0x15, 0xe1, 0xa5, 0x96, 0xf0, 0x37, 0xd0, 0x10,
+	0xcc, 0x47, 0x78, 0x38, 0x02, 0x43, 0x58, 0x60, 0x08, 0x83, 0x71, 0x2d, 0x0e, 0x66, 0xf5, 0xa0,
+	0x7e, 0xd8, 0x1c, 0xb4, 0x54, 0x2e, 0xac, 0x2f, 0xb8, 0x96, 0x62, 0x61, 0x0b, 0xba, 0x17, 0xa1,
+	0xeb, 0x70, 0x22, 0x23, 0x8a, 0xe8, 0xdc, 0x5b, 0x92, 0xc7, 0xa6, 0xf8, 0x33, 0x20, 0x65, 0x33,
+	0x63, 0xef, 0xbd, 0xf5, 0xd1, 0x01, 0x34, 0x5d, 0xc2, 0x66, 0x91, 0x17, 0x72, 0x8f, 0x06, 0x66,
+	0x43, 0xf2, 0xf4, 0x2b, 0x1c, 0xc2, 0x7a, 0x6c, 0xfb, 0xdf, 0x87, 0x89, 0x8e, 0x60, 0x9d, 0x91,
+	0xe8, 0x46, 0x00, 0xd4, 0x90, 0x00, 0x75, 0x12, 0x80, 0xce, 0x4e, 0xc7, 0xb6, 0xe4, 0x58, 0x89,
+	0x04, 0xfe, 0xb3, 0x0a, 0x9b, 0xe9, 0x35, 0x6a, 0x43, 0xfd, 0x3a, 0x5a, 0xc6, 0x5e, 0xc5, 0x11,
+	0xf5, 0x60, 0x43, 0x00, 0xaa, 0xb9, 0x4e, 0x69, 0x34, 0x84, 0xed, 0x59, 0x44, 0x5c, 0x12, 0x70,
+	0xcf, 0x59, 0x4e, 0x57, 0x21, 0x91, 0x71, 0x6c, 0x0f, 0x3e, 0xd0, 0xfc, 0x9d, 0x66, 0x04, 0xac,
+	0x9c, 0x82, 0x30, 0x1f, 0x3a, 0x8c, 0xdd, 0xd2, 0xc8, 0x8d, 0xf1, 0x48, 0x69, 0x01, 0x97, 0x33,
+	0x9b, 0x11, 0xc6, 0xa6, 0xf4, 0x8a, 0x04, 0xa6, 0xa1, 0xe0, 0xd2, 0xae, 0x50, 0x17, 0xd6, 0x7c,
+	0x67, 0xf6, 0x86, 0xac, 0xcc, 0x35, 0xc9, 0x8c, 0x29, 0xfc, 0x31, 0xec, 0x88, 0x67, 0x1f, 0x6a,
+	0xa2, 0xbb, 0x60, 0x70, 0x69, 0x46, 0xe5, 0xa6, 0x08, 0xfc, 0x5b, 0x55, 0xd6, 0xbf, 0x45, 0xa9,
+	0xff, 0xc8, 0xe2, 0xb8, 0xff, 0x71, 0x91, 0x09, 0xeb, 0x02, 0xba, 0xb3, 0x11, 0x33, 0x8d, 0x83,
+	0xfa, 0xe1, 0xa6, 0x95, 0x90, 0xf8, 0xf7, 0x2a, 0x34, 0x44, 0x0c, 0xff, 0xab, 0xfb, 0xb4, 0x6b,
+	0x8c, 0xf2, 0xae, 0xe1, 0x49, 0xd7, 0x48, 0x44, 0xfe, 0x93, 0xae, 0x79, 0x8f, 0xaa, 0x3f, 0x02,
+	0x43, 0xf8, 0x93, 0x8d, 0x1d, 0x89, 0x43, 0xbe, 0xb1, 0x05, 0xd7, 0x52, 0x2c, 0xfc, 0x35, 0x6c,
+	0xc9, 0x88, 0xd3, 0x27, 0xeb, 0xc2, 0x9a, 0xc2, 0x31, 0x8e, 0x2e, 0xa6, 0xc4, 0xbd, 0xd0, 0x38,
+	0x1b, 0xc5, 0x31, 0xc6, 0x54, 0x3c, 0xa8, 0x4a, 0x9f, 0x1c, 0xff, 0x08, 0x3b, 0x13, 0x67, 0xe1,
+	0x05, 0x8e, 0x88, 0x2d, 0x75, 0x41, 0xe7, 0x73, 0x46, 0xb8, 0x14, 0x33, 0xac, 0x98, 0x12, 0x09,
+	0x2f, 0x3d, 0xdf, 0xe3, 0xd2, 0x83, 0x61, 0x29, 0x42, 0xbc, 0xf3, 0x15, 0x59, 0xc9, 0x92, 0x56,
+	0x40, 0x24, 0x24, 0xfe, 0x02, 0xea, 0xf6, 0x68, 0x22, 0xb0, 0xe3, 0xa2, 0x5b, 0x94, 0x4f, 0x79,
+	0xce, 0xa3, 0x54, 0x2b, 0xa2, 0x34, 0x84, 0x0d, 0x7b, 0x34, 0x51, 0x01, 0x7d, 0x04, 0x75, 0xe6,
+	0x86, 0xd2, 0x40, 0x73, 0xd0, 0x4c, 0x60, 0xb2, 0x47, 0x13, 0x4b, 0xdc, 0x6b, 0x90, 0xd4, 0x74,
+	0x48, 0xf0, 0xaf, 0xd0, 0x15, 0xd8, 0x7d, 0x4b, 0xbd, 0xe0, 0x3b, 0xe2, 0xdc, 0xc8, 0x57, 0x1e,
+	0xdf, 0x90, 0x80, 0x3f, 0x14, 0x44, 0xd4, 0x87, 0x86, 0x58, 0x25, 0x32, 0xc1, 0xe6, 0xa0, 0xd7,
+	0x57, 0x7b, 0xa6, 0x9f, 0xec, 0x99, 0xfe, 0x34, 0xd9, 0x33, 0x96, 0x94, 0xfb, 0xe4, 0x53, 0xe8,
+	0x14, 0x86, 0x01, 0x6a, 0xc1, 0xc6, 0x64, 0x68, 0xdb, 0x3f, 0x9c, 0x5b, 0xa3, 0x76, 0x05, 0x6d,
+	0x82, 0x71, 0x3e, 0xbc, 0x98, 0xbe, 0x6e, 0x57, 0x07, 0x7f, 0x19, 0xf0, 0x44, 0xc4, 0xf6, 0xd6,
+	0x09, 0x9c, 0x05, 0xf1, 0x49, 0xc0, 0xc5, 0x7c, 0xf2, 0x66, 0x04, 0x3d, 0x87, 0x96, 0x45, 0x16,
+	0x1e, 0xe3, 0x24, 0x92, 0xdb, 0x64, 0x37, 0xc9, 0x5d, 0xdf, 0x62, 0xbd, 0x4c, 0x6d, 0xe3, 0x0a,
+	0x3a, 0x86, 0xf5, 0x78, 0x37, 0xbd, 0x53, 0xd0, 0x97, 0x55, 0x41, 0xe1, 0x39, 0x6c, 0xc4, 0x7c,
+	0x86, 0xf6, 0x12, 0x5e, 0xae, 0x2a, 0x7a, 0x5b, 0xba, 0x12, 0xc3, 0x15, 0x34, 0x06, 0x14, 0x6b,
+	0x65, 0x26, 0xcf, 0x9d, 0x1e, 0xf7, 0x74, 0x65, 0x4d, 0x1c, 0x57, 0xd0, 0x29, 0x74, 0x0a, 0xab,
+	0x0b, 0xed, 0xa7, 0xf2, 0x77, 0x6e, 0xb5, 0x42, 0x06, 0x03, 0x00, 0x8b, 0xf8, 0xf4, 0x86, 0x3c,
+	0x20, 0xeb, 0x01, 0xc0, 0x69, 0x44, 0xe2, 0xee, 0xcf, 0x40, 0x9b, 0x76, 0x4b, 0x2f, 0xd3, 0x93,
+	0xb8, 0x82, 0x9e, 0x49, 0x68, 0xb3, 0x0a, 0x7a, 0x7b, 0xbd, 0x43, 0x49, 0xb6, 0x38, 0xae, 0xa0,
+	0x13, 0x89, 0xad, 0x6a, 0xf8, 0x52, 0x6c, 0xf3, 0x6e, 0x52, 0x4c, 0xb4, 0xc1, 0x94, 0xc7, 0x24,
+	0x3f, 0xb3, 0x0a, 0x46, 0x5e, 0xc0, 0xd6, 0xd0, 0x75, 0x45, 0xb2, 0x53, 0x2a, 0x23, 0x7e, 0x92,
+	0x99, 0x81, 0xa5, 0x39, 0x7e, 0x0e, 0xed, 0x37, 0xde, 0xec, 0x4a, 0x08, 0xbd, 0x8c, 0xa8, 0xff,
+	0x10, 0xd5, 0x13, 0x68, 0x8e, 0x08, 0xe3, 0x11, 0x5d, 0xfd, 0x03, 0x44, 0x39, 0xa5, 0xc1, 0x1f,
+	0x0d, 0xe8, 0xd8, 0xe9, 0xff, 0x5e, 0x52, 0xfa, 0x9f, 0x01, 0xbc, 0x22, 0x3c, 0xc9, 0xbd, 0x5b,
+	0x68, 0xb9, 0xb1, 0xf8, 0xef, 0xeb, 0xed, 0xa4, 0x88, 0x2a, 0x41, 0x5c, 0x41, 0x5f, 0xc1, 0x56,
+	0xe6, 0xb7, 0x05, 0xf5, 0xb2, 0xb8, 0x65, 0x30, 0xbb, 0x43, 0xff, 0x85, 0x74, 0xfc, 0x76, 0x75,
+	0xcf, 0x93, 0x15, 0x1e, 0xfa, 0xf8, 0xbe, 0xd2, 0xc8, 0x83, 0x35, 0x86, 0xbd, 0xf3, 0xf9, 0x9c,
+	0x44, 0x36, 0x61, 0xcc, 0xa3, 0xc1, 0x48, 0x5b, 0x5e, 0x6d, 0x6d, 0xc6, 0x29, 0xe5, 0x12, 0x00,
+	0x70, 0x05, 0xbd, 0x04, 0x73, 0x18, 0xb0, 0xdb, 0x47, 0xdb, 0xf9, 0x12, 0x3a, 0xf6, 0xf5, 0xa5,
+	0xd0, 0xbd, 0x24, 0xf6, 0x68, 0x12, 0x0f, 0xca, 0x12, 0xdc, 0xf5, 0x21, 0x8c, 0x2b, 0xcf, 0xaa,
+	0xe8, 0x27, 0x78, 0x9a, 0x6a, 0x97, 0x0d, 0xdd, 0x12, 0x5b, 0xfb, 0x7a, 0x6d, 0x15, 0xf5, 0x84,
+	0xf9, 0x4b, 0xf5, 0xfb, 0x7f, 0xf2, 0x77, 0x00, 0x00, 0x00, 0xff, 0xff, 0x72, 0x4d, 0x93, 0x9e,
+	0x19, 0x0c, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -939,11 +1170,14 @@ const _ = grpc.SupportPackageIsVersion4
 type RoomManagementServiceClient interface {
 	RegisterUser(ctx context.Context, in *NewUserParam, opts ...grpc.CallOption) (*User, error)
 	GetUser(ctx context.Context, in *GetUserParam, opts ...grpc.CallOption) (*User, error)
+	GetUsers(ctx context.Context, in *PaginationParam, opts ...grpc.CallOption) (*Users, error)
 	GetUserAccessToken(ctx context.Context, in *GetUserParam, opts ...grpc.CallOption) (*UserAccessToken, error)
+	UpdateUserProfile(ctx context.Context, in *UpdateUserProfileParam, opts ...grpc.CallOption) (*User, error)
 	RemoveUser(ctx context.Context, in *GetUserParam, opts ...grpc.CallOption) (*User, error)
 	CreateRoom(ctx context.Context, in *NewRoomParam, opts ...grpc.CallOption) (*Room, error)
-	GetRoom(ctx context.Context, in *GetRoomsParam, opts ...grpc.CallOption) (*Rooms, error)
-	GetRooms(ctx context.Context, in *GetRoomParam, opts ...grpc.CallOption) (*Room, error)
+	GetRoom(ctx context.Context, in *GetRoomParam, opts ...grpc.CallOption) (*Rooms, error)
+	GetRooms(ctx context.Context, in *PaginationParam, opts ...grpc.CallOption) (*Room, error)
+	UpdateRoomProfile(ctx context.Context, in *UpdateRoomProfileParam, opts ...grpc.CallOption) (*Room, error)
 	AddUserToRoom(ctx context.Context, in *UserRoomParam, opts ...grpc.CallOption) (*Room, error)
 	KickUserFromRoom(ctx context.Context, in *UserRoomParam, opts ...grpc.CallOption) (*Room, error)
 	DestroyRoom(ctx context.Context, in *GetRoomParam, opts ...grpc.CallOption) (*Room, error)
@@ -975,9 +1209,27 @@ func (c *roomManagementServiceClient) GetUser(ctx context.Context, in *GetUserPa
 	return out, nil
 }
 
+func (c *roomManagementServiceClient) GetUsers(ctx context.Context, in *PaginationParam, opts ...grpc.CallOption) (*Users, error) {
+	out := new(Users)
+	err := c.cc.Invoke(ctx, "/protos.RoomManagementService/GetUsers", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *roomManagementServiceClient) GetUserAccessToken(ctx context.Context, in *GetUserParam, opts ...grpc.CallOption) (*UserAccessToken, error) {
 	out := new(UserAccessToken)
 	err := c.cc.Invoke(ctx, "/protos.RoomManagementService/GetUserAccessToken", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *roomManagementServiceClient) UpdateUserProfile(ctx context.Context, in *UpdateUserProfileParam, opts ...grpc.CallOption) (*User, error) {
+	out := new(User)
+	err := c.cc.Invoke(ctx, "/protos.RoomManagementService/UpdateUserProfile", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1002,7 +1254,7 @@ func (c *roomManagementServiceClient) CreateRoom(ctx context.Context, in *NewRoo
 	return out, nil
 }
 
-func (c *roomManagementServiceClient) GetRoom(ctx context.Context, in *GetRoomsParam, opts ...grpc.CallOption) (*Rooms, error) {
+func (c *roomManagementServiceClient) GetRoom(ctx context.Context, in *GetRoomParam, opts ...grpc.CallOption) (*Rooms, error) {
 	out := new(Rooms)
 	err := c.cc.Invoke(ctx, "/protos.RoomManagementService/GetRoom", in, out, opts...)
 	if err != nil {
@@ -1011,9 +1263,18 @@ func (c *roomManagementServiceClient) GetRoom(ctx context.Context, in *GetRoomsP
 	return out, nil
 }
 
-func (c *roomManagementServiceClient) GetRooms(ctx context.Context, in *GetRoomParam, opts ...grpc.CallOption) (*Room, error) {
+func (c *roomManagementServiceClient) GetRooms(ctx context.Context, in *PaginationParam, opts ...grpc.CallOption) (*Room, error) {
 	out := new(Room)
 	err := c.cc.Invoke(ctx, "/protos.RoomManagementService/GetRooms", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *roomManagementServiceClient) UpdateRoomProfile(ctx context.Context, in *UpdateRoomProfileParam, opts ...grpc.CallOption) (*Room, error) {
+	out := new(Room)
+	err := c.cc.Invoke(ctx, "/protos.RoomManagementService/UpdateRoomProfile", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1051,11 +1312,14 @@ func (c *roomManagementServiceClient) DestroyRoom(ctx context.Context, in *GetRo
 type RoomManagementServiceServer interface {
 	RegisterUser(context.Context, *NewUserParam) (*User, error)
 	GetUser(context.Context, *GetUserParam) (*User, error)
+	GetUsers(context.Context, *PaginationParam) (*Users, error)
 	GetUserAccessToken(context.Context, *GetUserParam) (*UserAccessToken, error)
+	UpdateUserProfile(context.Context, *UpdateUserProfileParam) (*User, error)
 	RemoveUser(context.Context, *GetUserParam) (*User, error)
 	CreateRoom(context.Context, *NewRoomParam) (*Room, error)
-	GetRoom(context.Context, *GetRoomsParam) (*Rooms, error)
-	GetRooms(context.Context, *GetRoomParam) (*Room, error)
+	GetRoom(context.Context, *GetRoomParam) (*Rooms, error)
+	GetRooms(context.Context, *PaginationParam) (*Room, error)
+	UpdateRoomProfile(context.Context, *UpdateRoomProfileParam) (*Room, error)
 	AddUserToRoom(context.Context, *UserRoomParam) (*Room, error)
 	KickUserFromRoom(context.Context, *UserRoomParam) (*Room, error)
 	DestroyRoom(context.Context, *GetRoomParam) (*Room, error)
@@ -1071,8 +1335,14 @@ func (*UnimplementedRoomManagementServiceServer) RegisterUser(ctx context.Contex
 func (*UnimplementedRoomManagementServiceServer) GetUser(ctx context.Context, req *GetUserParam) (*User, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUser not implemented")
 }
+func (*UnimplementedRoomManagementServiceServer) GetUsers(ctx context.Context, req *PaginationParam) (*Users, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUsers not implemented")
+}
 func (*UnimplementedRoomManagementServiceServer) GetUserAccessToken(ctx context.Context, req *GetUserParam) (*UserAccessToken, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserAccessToken not implemented")
+}
+func (*UnimplementedRoomManagementServiceServer) UpdateUserProfile(ctx context.Context, req *UpdateUserProfileParam) (*User, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserProfile not implemented")
 }
 func (*UnimplementedRoomManagementServiceServer) RemoveUser(ctx context.Context, req *GetUserParam) (*User, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveUser not implemented")
@@ -1080,11 +1350,14 @@ func (*UnimplementedRoomManagementServiceServer) RemoveUser(ctx context.Context,
 func (*UnimplementedRoomManagementServiceServer) CreateRoom(ctx context.Context, req *NewRoomParam) (*Room, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateRoom not implemented")
 }
-func (*UnimplementedRoomManagementServiceServer) GetRoom(ctx context.Context, req *GetRoomsParam) (*Rooms, error) {
+func (*UnimplementedRoomManagementServiceServer) GetRoom(ctx context.Context, req *GetRoomParam) (*Rooms, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetRoom not implemented")
 }
-func (*UnimplementedRoomManagementServiceServer) GetRooms(ctx context.Context, req *GetRoomParam) (*Room, error) {
+func (*UnimplementedRoomManagementServiceServer) GetRooms(ctx context.Context, req *PaginationParam) (*Room, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetRooms not implemented")
+}
+func (*UnimplementedRoomManagementServiceServer) UpdateRoomProfile(ctx context.Context, req *UpdateRoomProfileParam) (*Room, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateRoomProfile not implemented")
 }
 func (*UnimplementedRoomManagementServiceServer) AddUserToRoom(ctx context.Context, req *UserRoomParam) (*Room, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddUserToRoom not implemented")
@@ -1136,6 +1409,24 @@ func _RoomManagementService_GetUser_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RoomManagementService_GetUsers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PaginationParam)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RoomManagementServiceServer).GetUsers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.RoomManagementService/GetUsers",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RoomManagementServiceServer).GetUsers(ctx, req.(*PaginationParam))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _RoomManagementService_GetUserAccessToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetUserParam)
 	if err := dec(in); err != nil {
@@ -1150,6 +1441,24 @@ func _RoomManagementService_GetUserAccessToken_Handler(srv interface{}, ctx cont
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RoomManagementServiceServer).GetUserAccessToken(ctx, req.(*GetUserParam))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RoomManagementService_UpdateUserProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateUserProfileParam)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RoomManagementServiceServer).UpdateUserProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.RoomManagementService/UpdateUserProfile",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RoomManagementServiceServer).UpdateUserProfile(ctx, req.(*UpdateUserProfileParam))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1191,7 +1500,7 @@ func _RoomManagementService_CreateRoom_Handler(srv interface{}, ctx context.Cont
 }
 
 func _RoomManagementService_GetRoom_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetRoomsParam)
+	in := new(GetRoomParam)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1203,13 +1512,13 @@ func _RoomManagementService_GetRoom_Handler(srv interface{}, ctx context.Context
 		FullMethod: "/protos.RoomManagementService/GetRoom",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RoomManagementServiceServer).GetRoom(ctx, req.(*GetRoomsParam))
+		return srv.(RoomManagementServiceServer).GetRoom(ctx, req.(*GetRoomParam))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _RoomManagementService_GetRooms_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetRoomParam)
+	in := new(PaginationParam)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1221,7 +1530,25 @@ func _RoomManagementService_GetRooms_Handler(srv interface{}, ctx context.Contex
 		FullMethod: "/protos.RoomManagementService/GetRooms",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RoomManagementServiceServer).GetRooms(ctx, req.(*GetRoomParam))
+		return srv.(RoomManagementServiceServer).GetRooms(ctx, req.(*PaginationParam))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RoomManagementService_UpdateRoomProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateRoomProfileParam)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RoomManagementServiceServer).UpdateRoomProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.RoomManagementService/UpdateRoomProfile",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RoomManagementServiceServer).UpdateRoomProfile(ctx, req.(*UpdateRoomProfileParam))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1293,8 +1620,16 @@ var _RoomManagementService_serviceDesc = grpc.ServiceDesc{
 			Handler:    _RoomManagementService_GetUser_Handler,
 		},
 		{
+			MethodName: "GetUsers",
+			Handler:    _RoomManagementService_GetUsers_Handler,
+		},
+		{
 			MethodName: "GetUserAccessToken",
 			Handler:    _RoomManagementService_GetUserAccessToken_Handler,
+		},
+		{
+			MethodName: "UpdateUserProfile",
+			Handler:    _RoomManagementService_UpdateUserProfile_Handler,
 		},
 		{
 			MethodName: "RemoveUser",
@@ -1311,6 +1646,10 @@ var _RoomManagementService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetRooms",
 			Handler:    _RoomManagementService_GetRooms_Handler,
+		},
+		{
+			MethodName: "UpdateRoomProfile",
+			Handler:    _RoomManagementService_UpdateRoomProfile_Handler,
 		},
 		{
 			MethodName: "AddUserToRoom",
@@ -1334,7 +1673,8 @@ var _RoomManagementService_serviceDesc = grpc.ServiceDesc{
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type SignallingServiceClient interface {
 	GetProfile(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*Profile, error)
-	GetMyRooms(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*Rooms, error)
+	UpdateProfile(ctx context.Context, in *UpdateProfileParam, opts ...grpc.CallOption) (*Profile, error)
+	GetMyRooms(ctx context.Context, in *PaginationParam, opts ...grpc.CallOption) (*Rooms, error)
 	GetRoom(ctx context.Context, in *GetRoomParam, opts ...grpc.CallOption) (*Room, error)
 	OfferSessionDescription(ctx context.Context, in *SDPParam, opts ...grpc.CallOption) (*empty.Empty, error)
 	AnswerSessionDescription(ctx context.Context, in *SDPParam, opts ...grpc.CallOption) (*empty.Empty, error)
@@ -1359,7 +1699,16 @@ func (c *signallingServiceClient) GetProfile(ctx context.Context, in *empty.Empt
 	return out, nil
 }
 
-func (c *signallingServiceClient) GetMyRooms(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*Rooms, error) {
+func (c *signallingServiceClient) UpdateProfile(ctx context.Context, in *UpdateProfileParam, opts ...grpc.CallOption) (*Profile, error) {
+	out := new(Profile)
+	err := c.cc.Invoke(ctx, "/protos.SignallingService/UpdateProfile", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *signallingServiceClient) GetMyRooms(ctx context.Context, in *PaginationParam, opts ...grpc.CallOption) (*Rooms, error) {
 	out := new(Rooms)
 	err := c.cc.Invoke(ctx, "/protos.SignallingService/GetMyRooms", in, out, opts...)
 	if err != nil {
@@ -1462,7 +1811,8 @@ func (x *signallingServiceSubscribeUserJoinLeaveRoomEventClient) Recv() (*UserJo
 // SignallingServiceServer is the server API for SignallingService service.
 type SignallingServiceServer interface {
 	GetProfile(context.Context, *empty.Empty) (*Profile, error)
-	GetMyRooms(context.Context, *empty.Empty) (*Rooms, error)
+	UpdateProfile(context.Context, *UpdateProfileParam) (*Profile, error)
+	GetMyRooms(context.Context, *PaginationParam) (*Rooms, error)
 	GetRoom(context.Context, *GetRoomParam) (*Room, error)
 	OfferSessionDescription(context.Context, *SDPParam) (*empty.Empty, error)
 	AnswerSessionDescription(context.Context, *SDPParam) (*empty.Empty, error)
@@ -1477,7 +1827,10 @@ type UnimplementedSignallingServiceServer struct {
 func (*UnimplementedSignallingServiceServer) GetProfile(ctx context.Context, req *empty.Empty) (*Profile, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProfile not implemented")
 }
-func (*UnimplementedSignallingServiceServer) GetMyRooms(ctx context.Context, req *empty.Empty) (*Rooms, error) {
+func (*UnimplementedSignallingServiceServer) UpdateProfile(ctx context.Context, req *UpdateProfileParam) (*Profile, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateProfile not implemented")
+}
+func (*UnimplementedSignallingServiceServer) GetMyRooms(ctx context.Context, req *PaginationParam) (*Rooms, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMyRooms not implemented")
 }
 func (*UnimplementedSignallingServiceServer) GetRoom(ctx context.Context, req *GetRoomParam) (*Room, error) {
@@ -1518,8 +1871,26 @@ func _SignallingService_GetProfile_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SignallingService_UpdateProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateProfileParam)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SignallingServiceServer).UpdateProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.SignallingService/UpdateProfile",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SignallingServiceServer).UpdateProfile(ctx, req.(*UpdateProfileParam))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _SignallingService_GetMyRooms_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(empty.Empty)
+	in := new(PaginationParam)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1531,7 +1902,7 @@ func _SignallingService_GetMyRooms_Handler(srv interface{}, ctx context.Context,
 		FullMethod: "/protos.SignallingService/GetMyRooms",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SignallingServiceServer).GetMyRooms(ctx, req.(*empty.Empty))
+		return srv.(SignallingServiceServer).GetMyRooms(ctx, req.(*PaginationParam))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1639,6 +2010,10 @@ var _SignallingService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetProfile",
 			Handler:    _SignallingService_GetProfile_Handler,
+		},
+		{
+			MethodName: "UpdateProfile",
+			Handler:    _SignallingService_UpdateProfile_Handler,
 		},
 		{
 			MethodName: "GetMyRooms",

@@ -8,11 +8,14 @@ import "google/protobuf/timestamp.proto";
 service RoomManagementService {
   rpc RegisterUser(NewUserParam) returns (User) {}
   rpc GetUser(GetUserParam) returns (User) {}
+  rpc GetUsers(PaginationParam) returns (Users) {}
   rpc GetUserAccessToken(GetUserParam) returns (UserAccessToken) {}
+  rpc UpdateUserProfile(UpdateUserProfileParam) returns (User) {}
   rpc RemoveUser(GetUserParam) returns (User) {}
   rpc CreateRoom(NewRoomParam) returns (Room) {}
-  rpc GetRoom(GetRoomsParam) returns (Rooms) {}
-  rpc GetRooms(GetRoomParam) returns (Room) {}
+  rpc GetRoom(GetRoomParam) returns (Rooms) {}
+  rpc GetRooms(PaginationParam) returns (Room) {}
+  rpc UpdateRoomProfile(UpdateRoomProfileParam) returns (Room) {}
   rpc AddUserToRoom(UserRoomParam) returns (Room) {}
   rpc KickUserFromRoom(UserRoomParam) returns (Room) {}
   rpc DestroyRoom(GetRoomParam) returns (Room) {}
@@ -20,7 +23,8 @@ service RoomManagementService {
 
 service SignallingService {
   rpc GetProfile(google.protobuf.Empty) returns (Profile) {}
-  rpc GetMyRooms(google.protobuf.Empty) returns (Rooms) {}
+  rpc UpdateProfile(UpdateProfileParam) returns (Profile) {}
+  rpc GetMyRooms(PaginationParam) returns (Rooms) {}
   rpc GetRoom(GetRoomParam) returns (Room) {}
   rpc OfferSessionDescription(SDPParam) returns (google.protobuf.Empty) {}
   rpc AnswerSessionDescription(SDPParam) returns (google.protobuf.Empty) {}
@@ -42,6 +46,22 @@ message User {
   string id = 1;
   string name = 2;
   string photo = 3;
+}
+
+message Users {
+  repeated User users = 1;
+}
+
+message UpdateUserProfileParam {
+  string id = 1;
+  string name = 2;
+  string photo = 3;
+}
+
+message UpdateProfileParam {
+  string name = 2;
+  string photo = 3;
+  string description = 4;
 }
 
 message Profile {
@@ -82,7 +102,14 @@ message Room {
   string name = 2;
   string photo = 3;
   string description = 4;
-  repeated User userIDs = 5; 
+  repeated User users = 5; 
+}
+
+message UpdateRoomProfileParam {
+  string id = 1;
+  string name = 2;
+  string photo = 3;
+  string description = 4;
 }
 
 message Rooms {
@@ -98,9 +125,10 @@ message GetRoomParam {
   string id = 1;
 }
 
-message GetRoomsParam {
+message PaginationParam {
   int32 offset = 1; 
   int32 limit = 2; 
+  string keyword = 3;
 }
 
 message SDP {
