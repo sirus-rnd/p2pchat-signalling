@@ -2,3 +2,119 @@ syntax = "proto3";
 
 package protos;
 
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+service RoomManagementService {
+  rpc RegisterUser(NewUserParam) returns (User) {}
+  rpc GetUser(GetUserParam) returns (User) {}
+  rpc GetUserAccessToken(GetUserParam) returns (UserAccessToken) {}
+  rpc RemoveUser(GetUserParam) returns (User) {}
+  rpc CreateRoom(NewRoomParam) returns (Room) {}
+  rpc GetRoom(GetRoomsParam) returns (Rooms) {}
+  rpc GetRooms(GetRoomParam) returns (Room) {}
+  rpc AddUserToRoom(UserRoomParam) returns (Room) {}
+  rpc KickUserFromRoom(UserRoomParam) returns (Room) {}
+  rpc DestroyRoom(GetRoomParam) returns (Room) {}
+}
+
+service SignallingService {
+  rpc GetProfile(google.protobuf.Empty) returns (Profile) {}
+  rpc GetMyRooms(google.protobuf.Empty) returns (Rooms) {}
+  rpc GetRoom(GetRoomParam) returns (Room) {}
+  rpc OfferSessionDescription(SDPParam) returns (google.protobuf.Empty) {}
+  rpc AnswerSessionDescription(SDPParam) returns (google.protobuf.Empty) {}
+  rpc SubscribeSDPEvent(google.protobuf.Empty) returns (stream SDP) {}
+  rpc SubscribeUserJoinLeaveRoomEvent(google.protobuf.Empty) returns (stream UserJoinLeaveRoomEvent) {}
+}
+
+message NewUserParam {
+  string id = 1;
+  string name = 2;
+  string photo = 3;
+}
+
+message GetUserParam {
+  string id = 1;
+}
+
+message User {
+  string id = 1;
+  string name = 2;
+  string photo = 3;
+}
+
+message Profile {
+  string id = 1;
+  string name = 2;
+  string photo = 3;
+  repeated ICEServer servers = 4;
+}
+
+enum ICECredentialType {
+  PASSWORD = 0;
+  OAUTH = 1;
+}
+
+message ICEServer {
+  string url = 1;
+  string username = 2;
+  ICECredentialType credentialType = 3;
+  string password = 4;
+  string accessToken = 5;
+  string macKey = 6;
+}
+
+message UserAccessToken {
+  string token = 1;
+}
+
+message NewRoomParam {
+  string id = 1;
+  string name = 2;
+  string photo = 3;
+  string description = 4;
+  repeated string userIDs = 5; 
+}
+
+message Room {
+  string id = 1;
+  string name = 2;
+  string photo = 3;
+  string description = 4;
+  repeated User userIDs = 5; 
+}
+
+message Rooms {
+  repeated Room rooms = 1;
+}
+
+message UserRoomParam {
+  string userID = 1;
+  string roomID = 2;
+}
+
+message GetRoomParam {
+  string id = 1;
+}
+
+message GetRoomsParam {
+  int32 offset = 1; 
+  int32 limit = 2; 
+}
+
+message SDP {
+  string type = 1;
+  string description = 2;
+}
+
+message SDPParam {
+  SDP sdp = 1;
+  string userID = 2;
+}
+
+message UserJoinLeaveRoomEvent {
+  string userID = 1;
+  string roomID = 2;
+  google.protobuf.Timestamp time = 3;
+}
