@@ -28,8 +28,8 @@ service SignallingService {
   rpc GetRoom(GetRoomParam) returns (Room) {}
   rpc OfferSessionDescription(SDPParam) returns (google.protobuf.Empty) {}
   rpc AnswerSessionDescription(SDPParam) returns (google.protobuf.Empty) {}
-  rpc SubscribeSDPEvent(google.protobuf.Empty) returns (stream SDP) {}
-  rpc SubscribeUserJoinLeaveRoomEvent(google.protobuf.Empty) returns (stream UserJoinLeaveRoomEvent) {}
+  rpc SubscribeSDPCommand(google.protobuf.Empty) returns (stream SDP) {}
+  rpc SubscribeRoomEvent(google.protobuf.Empty) returns (stream RoomEvent) {}
 }
 
 message NewUserParam {
@@ -50,6 +50,7 @@ message User {
 
 message Users {
   repeated User users = 1;
+  uint64 count = 2;
 }
 
 message UpdateUserProfileParam {
@@ -114,6 +115,7 @@ message UpdateRoomProfileParam {
 
 message Rooms {
   repeated Room rooms = 1;
+  uint64 count = 2;
 }
 
 message UserRoomParam {
@@ -131,18 +133,54 @@ message PaginationParam {
   string keyword = 3;
 }
 
-message SDP {
-  string type = 1;
-  string description = 2;
-}
-
 message SDPParam {
   SDP sdp = 1;
   string userID = 2;
 }
 
-message UserJoinLeaveRoomEvent {
+message SDP {
+  SDPTypes type = 1;
+  string description = 2;
+  string senderID = 3;
+}
+
+enum SDPTypes {
+  Offer = 0;
+  Answer = 1;
+  Pranswer = 2;
+  Rollback = 3;
+}
+
+message RoomEvent {
+  RoomEvents event = 1;
+  google.protobuf.Timestamp time = 3;
+  oneof payload {
+    RoomParticipantEventPayload roomParticipant = 4;
+    RoomInstanceEventPayload roomInstance = 5;
+    UserInstanceEventPayload userInstance = 6;
+  }
+}
+
+enum RoomEvents {
+  UserLeftRoom = 0;
+  UserJoinedRoom = 1;
+  RoomCreated = 2;
+  RoomProfileUpdated = 3;
+  RoomDestroyed = 4;
+  UserRegistered = 5;
+  UserProfileUpdated = 6;
+  UserRemoved = 7;
+}
+
+message RoomParticipantEventPayload {
   string userID = 1;
   string roomID = 2;
-  google.protobuf.Timestamp time = 3;
+}
+
+message RoomInstanceEventPayload {
+  string roomID = 1;
+}
+
+message UserInstanceEventPayload {
+  string userID = 1;
 }
