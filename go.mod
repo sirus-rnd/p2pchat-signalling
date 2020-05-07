@@ -10,4 +10,5 @@ require (
 	github.com/onsi/gomega v1.9.0
 	go.uber.org/zap v1.15.0
 	google.golang.org/grpc v1.29.1
+	syreclabs.com/go/faker v1.2.2
 )

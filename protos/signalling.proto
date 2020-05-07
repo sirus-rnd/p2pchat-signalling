@@ -24,7 +24,7 @@ service RoomManagementService {
 service SignalingService {
   rpc GetProfile(google.protobuf.Empty) returns (Profile) {}
   rpc UpdateProfile(UpdateProfileParam) returns (Profile) {}
-  rpc GetMyRooms(PaginationParam) returns (Rooms) {}
+  rpc GetMyRooms(google.protobuf.Empty) returns (Rooms) {}
   rpc GetRoom(GetRoomParam) returns (Room) {}
   rpc OfferSessionDescription(SDPParam) returns (google.protobuf.Empty) {}
   rpc AnswerSessionDescription(SDPParam) returns (google.protobuf.Empty) {}

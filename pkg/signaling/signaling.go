@@ -37,7 +37,7 @@ type ISignalingService interface {
 	SetRoomEvents(chan *room.RoomEvent)
 	MyProfile(ctx context.Context) (*protos.Profile, error)
 	UpdateProfile(ctx context.Context, param protos.UpdateProfileParam) (*protos.Profile, error)
-	MyRooms(ctx context.Context, param protos.PaginationParam) (*protos.Rooms, error)
+	MyRooms(ctx context.Context) (*protos.Rooms, error)
 	MyRoomInfo(ctx context.Context, param protos.GetRoomParam) (*protos.Room, error)
 	OfferSDP(ctx context.Context, param protos.SDPParam) error
 	AnswerSDP(ctx context.Context, param protos.SDPParam) error

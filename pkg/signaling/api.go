@@ -3,7 +3,6 @@ package signaling
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/golang/protobuf/ptypes"
@@ -13,11 +12,20 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	CredentialTypePassword = iota
+	CredentialTypeOAuth
+)
+
+const (
+	ContextInvalidError = "context invalid"
+)
+
 // NewAPI will create new instance of signaling API
 func NewAPI(
 	db *gorm.DB,
 	logger *zap.SugaredLogger,
-	ICEServers []*ICEServer,
+	ICEServers *[]*ICEServer,
 ) *API {
 	return &API{
 		DB:         db,
@@ -35,11 +43,6 @@ type ICEServer struct {
 	AccessToken    *string `json:"access_token"`
 	MacKey         *string `json:"mac_key"`
 }
-
-const (
-	CredentialTypePassword = iota
-	CredentialTypeOAuth
-)
 
 // SDPTypeProtoToCommand mapping from  proto to command
 var SDPTypeProtoToCommand = map[protos.SDPTypes]string{
@@ -62,7 +65,7 @@ var SDPTypeCommandToProto = map[string]protos.SDPTypes{
 type API struct {
 	DB         *gorm.DB
 	Logger     *zap.SugaredLogger
-	ICEServers []*ICEServer
+	ICEServers *[]*ICEServer
 	Commands   chan *SDPCommand
 	Events     chan *room.RoomEvent
 }
@@ -91,7 +94,7 @@ func (a *API) SetRoomEvents(events chan *room.RoomEvent) {
 func (a *API) GetUserContext(ctx context.Context) (*room.UserModel, error) {
 	userID, ok := ctx.Value(room.UserIDKey).(string)
 	if !ok {
-		return nil, fmt.Errorf("context invalid")
+		return nil, fmt.Errorf(ContextInvalidError)
 	}
 	user := &room.UserModel{}
 	err := a.DB.
@@ -114,7 +117,7 @@ func (a *API) MyProfile(ctx context.Context) (*protos.Profile, error) {
 	}
 	// map ice server configurations
 	servers := []*protos.ICEServer{}
-	for _, ice := range a.ICEServers {
+	for _, ice := range *a.ICEServers {
 		server := &protos.ICEServer{Url: ice.URL}
 		if ice.CredentialType != nil {
 			server.CredentialType = protos.ICECredentialType(*ice.CredentialType)
@@ -179,31 +182,33 @@ func (a *API) UpdateProfile(ctx context.Context, param protos.UpdateProfileParam
 }
 
 // MyRooms will return list of room peer participates in
-func (a *API) MyRooms(ctx context.Context, param protos.PaginationParam) (*protos.Rooms, error) {
+func (a *API) MyRooms(ctx context.Context) (*protos.Rooms, error) {
 	user, err := a.GetUserContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 	// get room of this user
 	datas := []room.RoomModel{}
-	count := uint64(0)
-	keyword := strings.ToLower(param.Keyword)
 	err = a.DB.
 		Model(user).
-		Related(&[]room.RoomModel{}, "Rooms").
-		Where("LOWER(name) LIKE ?", "%"+keyword+"%").
-		Offset(int(param.Offset)).
-		Limit(int(param.Limit)).
-		Find(&datas).
+		Related(&datas, "Rooms").
 		Error
 	if err != nil {
 		return nil, err
 	}
-	err = a.DB.
+	count := a.DB.
 		Model(user).
-		Related(datas, "Rooms").
-		Where("LOWER(name) LIKE ?", "%"+keyword+"%").
-		Count(&count).Error
+		Association("Rooms").
+		Count()
+
+	// add member information to the datas
+	roomIds := []string{}
+	for _, data := range datas {
+		roomIds = append(roomIds, data.ID)
+	}
+	err = a.DB.Preload("Members").
+		Find(&datas, "id IN (?)", roomIds).
+		Error
 	if err != nil {
 		return nil, err
 	}
@@ -214,7 +219,7 @@ func (a *API) MyRooms(ctx context.Context, param protos.PaginationParam) (*proto
 	}
 	return &protos.Rooms{
 		Rooms: rooms,
-		Count: count,
+		Count: uint64(count),
 	}, nil
 }
 
@@ -224,17 +229,26 @@ func (a *API) MyRoomInfo(ctx context.Context, param protos.GetRoomParam) (*proto
 	if err != nil {
 		return nil, err
 	}
-	// check if user joined this room
-	var r *room.RoomModel
-	err = a.DB.
-		Model(user).
-		Related(&[]room.RoomModel{}, "Rooms").
-		Where(&room.RoomModel{ID: param.Id}).
-		First(&r).
+	// get room of this user
+	r := &room.RoomModel{}
+	err = a.DB.Preload("Members").
+		First(r, "id = ?", param.Id).
 		Error
 	if err != nil {
 		return nil, err
 	}
+	// check if user are member this room
+	exist := false
+	for _, member := range r.Members {
+		if member.ID == user.ID {
+			exist = true
+			break
+		}
+	}
+	if !exist {
+		return nil, fmt.Errorf(room.RoomNotFoundError)
+	}
+	// return room with members
 	return room.RoomModelToProto(r), nil
 }
 
