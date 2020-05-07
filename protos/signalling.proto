@@ -21,7 +21,7 @@ service RoomManagementService {
   rpc DestroyRoom(GetRoomParam) returns (Room) {}
 }
 
-service SignallingService {
+service SignalingService {
   rpc GetProfile(google.protobuf.Empty) returns (Profile) {}
   rpc UpdateProfile(UpdateProfileParam) returns (Profile) {}
   rpc GetMyRooms(PaginationParam) returns (Rooms) {}
@@ -62,7 +62,6 @@ message UpdateUserProfileParam {
 message UpdateProfileParam {
   string name = 2;
   string photo = 3;
-  string description = 4;
 }
 
 message Profile {
@@ -173,14 +172,19 @@ enum RoomEvents {
 }
 
 message RoomParticipantEventPayload {
-  string userID = 1;
+  string participantID = 1;
   string roomID = 2;
 }
 
 message RoomInstanceEventPayload {
-  string roomID = 1;
+  string id = 1;
+  string name = 2;
+  string photo = 3;
+  string description = 4;
 }
 
 message UserInstanceEventPayload {
-  string userID = 1;
+  string id = 1;
+  string name = 2;
+  string photo = 3;
 }

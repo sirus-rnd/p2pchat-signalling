@@ -36,20 +36,28 @@ type RoomEvent struct {
 // RoomParticipantEventPayload is payload emittend on room participant related events
 // like user left or join a room
 type RoomParticipantEventPayload struct {
-	UserID string `json:"user_id"`
-	RoomID string `json:"room_id"`
+	UserID         string   `json:"user_id"`
+	RoomID         string   `json:"room_id"`
+	ParticipantIDs []string `json:"participant_ids"`
 }
 
 // RoomInstanceEventPayload is payload emittend on room instance related events
 // like new room created, destroyed or profile updated
 type RoomInstanceEventPayload struct {
-	RoomID string `json:"room_id"`
+	ID          string   `json:"id"`
+	Name        string   `json:"name"`
+	Photo       string   `json:"photo"`
+	Description string   `json:"description"`
+	MemberIDs   []string `json:"member_ids"`
 }
 
 // UserInstanceEventPayload is payload emittend on user instance related events
 // like new user created, destroyed or profile updated
 type UserInstanceEventPayload struct {
-	UserID string `json:"user_id"`
+	ID      string   `json:"id"`
+	Name    string   `json:"name"`
+	Photo   string   `json:"photo"`
+	RoomIDs []string `json:"room_ids"`
 }
 
 // IRoomService is service related to room & authorization management

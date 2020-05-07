@@ -1,8 +1,9 @@
-package room
+package signaling
 
 import (
 	"context"
 
+	"go.sirus.dev/p2p-comm/signalling/pkg/room"
 	"go.sirus.dev/p2p-comm/signalling/protos"
 )
 
@@ -14,29 +15,30 @@ const (
 )
 
 const (
-	SDPAnswer   = "answer"
 	SDPOffer    = "offer"
+	SDPAnswer   = "answer"
 	SDPPranswer = "pranswer"
 	SDPRollback = "rollback"
 )
 
 // SDPCommand related to session description command emitted by peers
 type SDPCommand struct {
-	RoomID      string `json:"room_id"`
 	From        string `json:"from"`
 	To          string `json:"to"`
 	Type        string `json:"type"`
 	Description string `json:"description"`
 }
 
-// IUserService is service related to user management
-type IUserService interface {
+// ISignalingService is service related to signaling from peer to peer
+type ISignalingService interface {
 	GetCommands() <-chan *SDPCommand
-	SetCommands(chan *SDPCommand)
+	SetCommands(commands chan *SDPCommand)
+	GetRoomEvents() <-chan *room.RoomEvent
+	SetRoomEvents(chan *room.RoomEvent)
 	MyProfile(ctx context.Context) (*protos.Profile, error)
 	UpdateProfile(ctx context.Context, param protos.UpdateProfileParam) (*protos.Profile, error)
 	MyRooms(ctx context.Context, param protos.PaginationParam) (*protos.Rooms, error)
-	MyRoomInfo(ctx context.Context) (*protos.Room, error)
+	MyRoomInfo(ctx context.Context, param protos.GetRoomParam) (*protos.Room, error)
 	OfferSDP(ctx context.Context, param protos.SDPParam) error
 	AnswerSDP(ctx context.Context, param protos.SDPParam) error
 	SubscribeSDPCommand(
@@ -46,7 +48,7 @@ type IUserService interface {
 	) error
 	SubscribeRoomEvent(
 		ctx context.Context,
-		commands <-chan *RoomEvent,
+		commands <-chan *room.RoomEvent,
 		protoEvents chan<- *protos.RoomEvent,
 	) error
 }

@@ -23,21 +23,21 @@ const (
 	RoomNotFoundError = "room not found"
 )
 
-// NewRoomAPI will create new instance of room API
-func NewRoomAPI(
+// NewAPI will create new instance of room API
+func NewAPI(
 	db *gorm.DB,
 	logger *zap.SugaredLogger,
 	accessSecret string,
-) *RoomAPI {
-	return &RoomAPI{
+) *API {
+	return &API{
 		DB:           db,
 		Logger:       logger,
 		AccessSecret: accessSecret,
 	}
 }
 
-// RoomAPI to manage room & participant in it
-type RoomAPI struct {
+// API to manage room & participant in it
+type API struct {
 	DB           *gorm.DB
 	Logger       *zap.SugaredLogger
 	AccessSecret string
@@ -45,26 +45,56 @@ type RoomAPI struct {
 }
 
 // GetEvents will return channel use to publish events
-func (a *RoomAPI) GetEvents() <-chan *RoomEvent {
+func (a *API) GetEvents() <-chan *RoomEvent {
 	return a.Events
 }
 
 // SetEvents will set channel use to publish events
-func (a *RoomAPI) SetEvents(events chan *RoomEvent) {
+func (a *API) SetEvents(events chan *RoomEvent) {
 	a.Events = events
 }
 
-// UserModelToProto will convert user model to it's proto representation
-func (a *RoomAPI) UserModelToProto(model *UserModel) *protos.User {
-	return &protos.User{
-		Id:    model.ID,
-		Name:  model.Name,
-		Photo: model.Photo,
+// GetUserInstancePayload return user instance used on user instance payload
+func (a *API) GetUserInstancePayload(user *UserModel) (*UserInstanceEventPayload, error) {
+	rooms := &[]RoomModel{}
+	err := a.DB.Model(user).Related(rooms, "Rooms").Error
+	if err != nil {
+		return nil, err
 	}
+	roomIDs := []string{}
+	for _, r := range *rooms {
+		roomIDs = append(roomIDs, r.ID)
+	}
+	return &UserInstanceEventPayload{
+		ID:      user.ID,
+		Name:    user.Name,
+		Photo:   user.Photo,
+		RoomIDs: roomIDs,
+	}, nil
+}
+
+// GetRoomInstancePayload return room instance used on room instance payload
+func (a *API) GetRoomInstancePayload(room *RoomModel) (*RoomInstanceEventPayload, error) {
+	users := &[]UserModel{}
+	err := a.DB.Model(room).Related(users, "Members").Error
+	if err != nil {
+		return nil, err
+	}
+	userIDs := []string{}
+	for _, u := range *users {
+		userIDs = append(userIDs, u.ID)
+	}
+	return &RoomInstanceEventPayload{
+		ID:          room.ID,
+		Name:        room.Name,
+		Photo:       room.Photo,
+		Description: room.Description,
+		MemberIDs:   userIDs,
+	}, nil
 }
 
 // RegisterUser will register new user that can participate in a room
-func (a *RoomAPI) RegisterUser(ctx context.Context, param protos.NewUserParam) (*protos.User, error) {
+func (a *API) RegisterUser(ctx context.Context, param protos.NewUserParam) (*protos.User, error) {
 	// check if user presents
 	var user *UserModel
 	err := a.DB.Where(&UserModel{ID: param.Id}).
@@ -88,18 +118,20 @@ func (a *RoomAPI) RegisterUser(ctx context.Context, param protos.NewUserParam) (
 		return nil, err
 	}
 	// publish user registered events
-	a.Events <- &RoomEvent{
-		Time:  time.Now(),
-		Event: UserRegistered,
-		Payload: &UserInstanceEventPayload{
-			UserID: user.ID,
-		},
+	payload, err := a.GetUserInstancePayload(user)
+	if err != nil {
+		return nil, err
 	}
-	return a.UserModelToProto(user), nil
+	a.Events <- &RoomEvent{
+		Time:    time.Now(),
+		Event:   UserRegistered,
+		Payload: payload,
+	}
+	return UserModelToProto(user), nil
 }
 
 // GetUser return user information by it's id
-func (a *RoomAPI) GetUser(ctx context.Context, param protos.GetUserParam) (*protos.User, error) {
+func (a *API) GetUser(ctx context.Context, param protos.GetUserParam) (*protos.User, error) {
 	user := &UserModel{}
 	err := a.DB.Where(&UserModel{ID: param.Id}).
 		First(user).Error
@@ -109,11 +141,11 @@ func (a *RoomAPI) GetUser(ctx context.Context, param protos.GetUserParam) (*prot
 		}
 		return nil, err
 	}
-	return a.UserModelToProto(user), nil
+	return UserModelToProto(user), nil
 }
 
 // GetUsers return list of user registered on system
-func (a *RoomAPI) GetUsers(ctx context.Context, param protos.PaginationParam) (*protos.Users, error) {
+func (a *API) GetUsers(ctx context.Context, param protos.PaginationParam) (*protos.Users, error) {
 	datas := []UserModel{}
 	count := uint64(0)
 	keyword := strings.ToLower(param.Keyword)
@@ -135,7 +167,7 @@ func (a *RoomAPI) GetUsers(ctx context.Context, param protos.PaginationParam) (*
 	}
 	users := []*protos.User{}
 	for _, data := range datas {
-		user := a.UserModelToProto(&data)
+		user := UserModelToProto(&data)
 		users = append(users, user)
 	}
 	return &protos.Users{
@@ -145,7 +177,7 @@ func (a *RoomAPI) GetUsers(ctx context.Context, param protos.PaginationParam) (*
 }
 
 // GetUserAccessToken will return access token used by peer as an user identification form
-func (a *RoomAPI) GetUserAccessToken(ctx context.Context, param protos.GetUserParam) (*protos.UserAccessToken, error) {
+func (a *API) GetUserAccessToken(ctx context.Context, param protos.GetUserParam) (*protos.UserAccessToken, error) {
 	// get user information
 	user := &UserModel{}
 	err := a.DB.Where(&UserModel{ID: param.Id}).
@@ -168,7 +200,7 @@ func (a *RoomAPI) GetUserAccessToken(ctx context.Context, param protos.GetUserPa
 }
 
 // UpdateUserProfile will update user profile informations
-func (a *RoomAPI) UpdateUserProfile(ctx context.Context, param protos.UpdateUserProfileParam) (*protos.User, error) {
+func (a *API) UpdateUserProfile(ctx context.Context, param protos.UpdateUserProfileParam) (*protos.User, error) {
 	// get user information
 	user := &UserModel{}
 	err := a.DB.Where(&UserModel{ID: param.Id}).
@@ -187,18 +219,20 @@ func (a *RoomAPI) UpdateUserProfile(ctx context.Context, param protos.UpdateUser
 		return nil, err
 	}
 	// publish user profile updated events
-	a.Events <- &RoomEvent{
-		Time:  time.Now(),
-		Event: UserProfileUpdated,
-		Payload: &UserInstanceEventPayload{
-			UserID: user.ID,
-		},
+	payload, err := a.GetUserInstancePayload(user)
+	if err != nil {
+		return nil, err
 	}
-	return a.UserModelToProto(user), nil
+	a.Events <- &RoomEvent{
+		Time:    time.Now(),
+		Event:   UserProfileUpdated,
+		Payload: payload,
+	}
+	return UserModelToProto(user), nil
 }
 
 // RemoveUser will remove a user from system
-func (a *RoomAPI) RemoveUser(ctx context.Context, param protos.GetRoomParam) (*protos.User, error) {
+func (a *API) RemoveUser(ctx context.Context, param protos.GetRoomParam) (*protos.User, error) {
 	// remove user
 	var user *UserModel
 	err := a.DB.Where(&UserModel{ID: param.Id}).Delete(user).Error
@@ -209,35 +243,20 @@ func (a *RoomAPI) RemoveUser(ctx context.Context, param protos.GetRoomParam) (*p
 		return nil, err
 	}
 	// publish user removed events
+	payload, err := a.GetUserInstancePayload(user)
+	if err != nil {
+		return nil, err
+	}
 	a.Events <- &RoomEvent{
-		Time:  time.Now(),
-		Event: UserRemoved,
-		Payload: &UserInstanceEventPayload{
-			UserID: user.ID,
-		},
+		Time:    time.Now(),
+		Event:   UserRemoved,
+		Payload: payload,
 	}
-	return a.UserModelToProto(user), nil
-}
-
-// RoomModelToProto will convert room model to it's proto representation
-func (a *RoomAPI) RoomModelToProto(model *RoomModel) *protos.Room {
-	room := &protos.Room{
-		Id:          model.ID,
-		Name:        model.Name,
-		Photo:       model.Photo,
-		Description: model.Description,
-	}
-	users := []*protos.User{}
-	for _, member := range model.Members {
-		user := a.UserModelToProto(member)
-		users = append(users, user)
-	}
-	room.Users = users
-	return room
+	return UserModelToProto(user), nil
 }
 
 // Create will create a new room for user to participate in
-func (a *RoomAPI) Create(ctx context.Context, param protos.NewRoomParam) (*protos.Room, error) {
+func (a *API) Create(ctx context.Context, param protos.NewRoomParam) (*protos.Room, error) {
 	// check if user presents
 	var room *RoomModel
 	err := a.DB.Where(&RoomModel{ID: param.Id}).
@@ -275,18 +294,20 @@ func (a *RoomAPI) Create(ctx context.Context, param protos.NewRoomParam) (*proto
 		return nil, err
 	}
 	// publish new room created events
-	a.Events <- &RoomEvent{
-		Time:  time.Now(),
-		Event: RoomCreated,
-		Payload: &RoomInstanceEventPayload{
-			RoomID: room.ID,
-		},
+	payload, err := a.GetRoomInstancePayload(room)
+	if err != nil {
+		return nil, err
 	}
-	return a.RoomModelToProto(room), nil
+	a.Events <- &RoomEvent{
+		Time:    time.Now(),
+		Event:   RoomCreated,
+		Payload: payload,
+	}
+	return RoomModelToProto(room), nil
 }
 
 // GetByID will return a room and it's participant by it's id
-func (a *RoomAPI) GetByID(ctx context.Context, param protos.GetRoomParam) (*protos.Room, error) {
+func (a *API) GetByID(ctx context.Context, param protos.GetRoomParam) (*protos.Room, error) {
 	// get room detail
 	var room *RoomModel
 	err := a.DB.Preload("Members").
@@ -298,11 +319,11 @@ func (a *RoomAPI) GetByID(ctx context.Context, param protos.GetRoomParam) (*prot
 		}
 		return nil, err
 	}
-	return a.RoomModelToProto(room), nil
+	return RoomModelToProto(room), nil
 }
 
 // GetAll will return all room registered on system
-func (a *RoomAPI) GetAll(ctx context.Context, param protos.PaginationParam) (*protos.Rooms, error) {
+func (a *API) GetAll(ctx context.Context, param protos.PaginationParam) (*protos.Rooms, error) {
 	datas := []RoomModel{}
 	count := uint64(0)
 	keyword := strings.ToLower(param.Keyword)
@@ -325,7 +346,7 @@ func (a *RoomAPI) GetAll(ctx context.Context, param protos.PaginationParam) (*pr
 	}
 	rooms := []*protos.Room{}
 	for _, data := range datas {
-		room := a.RoomModelToProto(&data)
+		room := RoomModelToProto(&data)
 		rooms = append(rooms, room)
 	}
 	return &protos.Rooms{
@@ -335,7 +356,7 @@ func (a *RoomAPI) GetAll(ctx context.Context, param protos.PaginationParam) (*pr
 }
 
 // UpdateProfile will update room profile like description and photo
-func (a *RoomAPI) UpdateProfile(ctx context.Context, param protos.UpdateRoomProfileParam) (*protos.Room, error) {
+func (a *API) UpdateProfile(ctx context.Context, param protos.UpdateRoomProfileParam) (*protos.Room, error) {
 	// get room detail
 	var room *RoomModel
 	err := a.DB.Preload("Members").
@@ -356,18 +377,20 @@ func (a *RoomAPI) UpdateProfile(ctx context.Context, param protos.UpdateRoomProf
 		return nil, err
 	}
 	// publish room profile updated events
-	a.Events <- &RoomEvent{
-		Time:  time.Now(),
-		Event: RoomProfileUpdated,
-		Payload: &RoomInstanceEventPayload{
-			RoomID: room.ID,
-		},
+	payload, err := a.GetRoomInstancePayload(room)
+	if err != nil {
+		return nil, err
 	}
-	return a.RoomModelToProto(room), nil
+	a.Events <- &RoomEvent{
+		Time:    time.Now(),
+		Event:   RoomProfileUpdated,
+		Payload: payload,
+	}
+	return RoomModelToProto(room), nil
 }
 
 // AddUser to a room
-func (a *RoomAPI) AddUser(ctx context.Context, param protos.UserRoomParam) (*protos.Room, error) {
+func (a *API) AddUser(ctx context.Context, param protos.UserRoomParam) (*protos.Room, error) {
 	// get room detail
 	var room *RoomModel
 	err := a.DB.
@@ -402,11 +425,11 @@ func (a *RoomAPI) AddUser(ctx context.Context, param protos.UserRoomParam) (*pro
 			RoomID: param.RoomID,
 		},
 	}
-	return a.RoomModelToProto(room), nil
+	return RoomModelToProto(room), nil
 }
 
 // KickUser from a room
-func (a *RoomAPI) KickUser(ctx context.Context, param protos.UserRoomParam) (*protos.Room, error) {
+func (a *API) KickUser(ctx context.Context, param protos.UserRoomParam) (*protos.Room, error) {
 	// get room detail
 	var room *RoomModel
 	err := a.DB.
@@ -441,11 +464,11 @@ func (a *RoomAPI) KickUser(ctx context.Context, param protos.UserRoomParam) (*pr
 			RoomID: param.RoomID,
 		},
 	}
-	return a.RoomModelToProto(room), nil
+	return RoomModelToProto(room), nil
 }
 
 // Destroy a room
-func (a *RoomAPI) Destroy(ctx context.Context, param protos.GetRoomParam) (*protos.Room, error) {
+func (a *API) Destroy(ctx context.Context, param protos.GetRoomParam) (*protos.Room, error) {
 	// remove room
 	var room *RoomModel
 	err := a.DB.Where(&UserModel{ID: param.Id}).
@@ -457,12 +480,14 @@ func (a *RoomAPI) Destroy(ctx context.Context, param protos.GetRoomParam) (*prot
 		return nil, err
 	}
 	// publish room destroyed events
-	a.Events <- &RoomEvent{
-		Time:  time.Now(),
-		Event: RoomDestroyed,
-		Payload: &RoomInstanceEventPayload{
-			RoomID: room.ID,
-		},
+	payload, err := a.GetRoomInstancePayload(room)
+	if err != nil {
+		return nil, err
 	}
-	return a.RoomModelToProto(room), nil
+	a.Events <- &RoomEvent{
+		Time:    time.Now(),
+		Event:   RoomDestroyed,
+		Payload: payload,
+	}
+	return RoomModelToProto(room), nil
 }
