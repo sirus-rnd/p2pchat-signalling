@@ -435,17 +435,130 @@ var _ = Describe("API", func() {
 	})
 
 	Describe("Create", func() {
-		It("should add new room to system", func() {})
-		It("should publish user created event", func() {})
+		It("should add new room to system", func() {
+			ctx := context.Background()
+			param := protos.NewRoomParam{
+				Id:          faker.RandomString(5),
+				Name:        faker.Commerce().ProductName(),
+				Photo:       faker.Avatar().String(),
+				Description: faker.Lorem().Sentence(5),
+				UserIDs: []string{
+					u1.ID, u7.ID, u5.ID,
+				},
+			}
+			go func() { <-roomEvents }()
+			res, err := api.Create(ctx, param)
+			Expect(err).To(BeNil())
+			Expect(res.Id).To(Equal(param.Id))
+			Expect(res.Name).To(Equal(param.Name))
+			Expect(res.Photo).To(Equal(param.Photo))
+			Expect(res.Description).To(Equal(param.Description))
+			Expect(res.Users).To(ConsistOf(
+				room.UserModelToProto(u1),
+				room.UserModelToProto(u7),
+				room.UserModelToProto(u5),
+			))
+		})
+
+		It("should publish room created event", func(done Done) {
+			ctx := context.Background()
+			param := protos.NewRoomParam{
+				Id:          faker.RandomString(5),
+				Name:        faker.Commerce().ProductName(),
+				Photo:       faker.Avatar().String(),
+				Description: faker.Lorem().Sentence(5),
+				UserIDs: []string{
+					u1.ID, u7.ID, u5.ID,
+				},
+			}
+			go func() {
+				api.Create(ctx, param)
+			}()
+			event := <-roomEvents
+			Expect(event.Event).To(Equal(room.RoomCreated))
+			payload := event.Payload.(*room.RoomInstanceEventPayload)
+			Expect(payload.ID).To(Equal(param.Id))
+			Expect(payload.Name).To(Equal(param.Name))
+			Expect(payload.Photo).To(Equal(param.Photo))
+			Expect(payload.Description).To(Equal(param.Description))
+			Expect(payload.MemberIDs).To(ConsistOf(
+				u1.ID, u7.ID, u5.ID,
+			))
+			close(done)
+		}, 0.3)
+
 		When("room already created", func() {
-			It("should return room already exist error", func() {})
+			It("should return room already exist error", func() {
+				ctx := context.Background()
+				param := protos.NewRoomParam{
+					Id:          r1.ID,
+					Name:        faker.Commerce().ProductName(),
+					Photo:       faker.Avatar().String(),
+					Description: faker.Lorem().Sentence(5),
+					UserIDs: []string{
+						u1.ID, u7.ID, u5.ID,
+					},
+				}
+				res, err := api.Create(ctx, param)
+				Expect(res).To(BeNil())
+				Expect(err.Error()).To(Equal(room.RoomAlreadyExistError))
+			})
+		})
+
+		When("user not exist", func() {
+			It("should omit from member list", func() {
+				ctx := context.Background()
+				param := protos.NewRoomParam{
+					Id:          faker.RandomString(5),
+					Name:        faker.Commerce().ProductName(),
+					Photo:       faker.Avatar().String(),
+					Description: faker.Lorem().Sentence(5),
+					UserIDs: []string{
+						u1.ID, "not-exist-id",
+					},
+				}
+				go func() { <-roomEvents }()
+				res, err := api.Create(ctx, param)
+				Expect(err).To(BeNil())
+				Expect(res.Id).To(Equal(param.Id))
+				Expect(res.Name).To(Equal(param.Name))
+				Expect(res.Photo).To(Equal(param.Photo))
+				Expect(res.Description).To(Equal(param.Description))
+				Expect(res.Users).To(ConsistOf(
+					room.UserModelToProto(u1),
+				))
+			})
 		})
 	})
 
 	Describe("GetByID", func() {
-		It("should return room by it's id", func() {})
+		It("should return room by it's id", func() {
+			ctx := context.Background()
+			param := protos.GetRoomParam{
+				Id: r1.ID,
+			}
+			res, err := api.GetByID(ctx, param)
+			Expect(err).To(BeNil())
+			Expect(res.Id).To(Equal(r1.ID))
+			Expect(res.Name).To(Equal(r1.Name))
+			Expect(res.Photo).To(Equal(r1.Photo))
+			Expect(res.Description).To(Equal(r1.Description))
+			Expect(res.Users).To(ConsistOf(
+				room.UserModelToProto(u1),
+				room.UserModelToProto(u2),
+			))
+		})
+
 		When("room not exist", func() {
-			It("should return room not found error", func() {})
+			It("should return room not found error", func() {
+				ctx := context.Background()
+				param := protos.GetRoomParam{
+					Id: "not-exist-room",
+				}
+				res, err := api.GetByID(ctx, param)
+				Expect(res).To(BeNil())
+				Expect(err.Error()).To(Equal(room.RoomNotFoundError))
+			})
 		})
 	})
 
@@ -540,40 +653,277 @@ var _ = Describe("API", func() {
 	})
 
 	Describe("UpdateProfile", func() {
-		It("should update room's profile information", func() {})
-		It("should publish room profile updated event", func() {})
+		It("should update room's profile information", func() {
+			ctx := context.Background()
+			param := protos.UpdateRoomProfileParam{
+				Id:          r1.ID,
+				Name:        faker.Commerce().ProductName(),
+				Photo:       faker.Avatar().String(),
+				Description: faker.Lorem().Sentence(5),
+			}
+			go func() { <-roomEvents }()
+			res, err := api.UpdateProfile(ctx, param)
+			Expect(err).To(BeNil())
+			Expect(res.Id).To(Equal(param.Id))
+			Expect(res.Name).To(Equal(param.Name))
+			Expect(res.Photo).To(Equal(param.Photo))
+			Expect(res.Description).To(Equal(param.Description))
+			Expect(res.Users).To(ConsistOf(
+				room.UserModelToProto(u1),
+				room.UserModelToProto(u2),
+			))
+		})
+
+		It("should publish room profile updated event", func(done Done) {
+			ctx := context.Background()
+			param := protos.UpdateRoomProfileParam{
+				Id:          r1.ID,
+				Name:        faker.Commerce().ProductName(),
+				Photo:       faker.Avatar().String(),
+				Description: faker.Lorem().Sentence(5),
+			}
+			go func() {
+				api.UpdateProfile(ctx, param)
+			}()
+			event := <-roomEvents
+			Expect(event.Event).To(Equal(room.RoomProfileUpdated))
+			payload := event.Payload.(*room.RoomInstanceEventPayload)
+			Expect(payload.ID).To(Equal(param.Id))
+			Expect(payload.Name).To(Equal(param.Name))
+			Expect(payload.Photo).To(Equal(param.Photo))
+			Expect(payload.Description).To(Equal(param.Description))
+			Expect(payload.MemberIDs).To(ConsistOf(
+				u1.ID, u2.ID,
+			))
+			close(done)
+		}, 0.3)
+
 		When("room not exist", func() {
-			It("should return room not found error", func() {})
+			It("should return room not found error", func() {
+				ctx := context.Background()
+				param := protos.UpdateRoomProfileParam{
+					Id:          "not-exist-room",
+					Name:        faker.Commerce().ProductName(),
+					Photo:       faker.Avatar().String(),
+					Description: faker.Lorem().Sentence(5),
+				}
+				res, err := api.UpdateProfile(ctx, param)
+				Expect(res).To(BeNil())
+				Expect(err.Error()).To(Equal(room.RoomNotFoundError))
+			})
 		})
 	})
 
 	Describe("AddUser", func() {
-		It("should add user to room", func() {})
-		It("should publish user joined room event", func() {})
-		When("user already added to room", func() {
-			It("should not add user to room", func() {})
+		It("should add user to room", func() {
+			ctx := context.Background()
+			param := protos.UserRoomParam{
+				RoomID: r1.ID,
+				UserID: u6.ID,
+			}
+			go func() { <-roomEvents }()
+			res, err := api.AddUser(ctx, param)
+			Expect(err).To(BeNil())
+			Expect(res.Id).To(Equal(r1.ID))
+			Expect(res.Name).To(Equal(r1.Name))
+			Expect(res.Photo).To(Equal(r1.Photo))
+			Expect(res.Description).To(Equal(r1.Description))
+			Expect(res.Users).To(ConsistOf(
+				room.UserModelToProto(u1),
+				room.UserModelToProto(u2),
+				room.UserModelToProto(u6),
+			))
 		})
+
+		It("should publish user joined room event", func(done Done) {
+			ctx := context.Background()
+			param := protos.UserRoomParam{
+				RoomID: r1.ID,
+				UserID: u6.ID,
+			}
+			go func() {
+				api.AddUser(ctx, param)
+			}()
+			event := <-roomEvents
+			Expect(event.Event).To(Equal(room.UserJoinedRoom))
+			payload := event.Payload.(*room.RoomParticipantEventPayload)
+			Expect(payload.RoomID).To(Equal(param.RoomID))
+			Expect(payload.UserID).To(Equal(param.UserID))
+			close(done)
+		}, 0.3)
+
+		When("user already added to room", func() {
+			It("should not add user to room", func() {
+				ctx := context.Background()
+				param := protos.UserRoomParam{
+					RoomID: r1.ID,
+					UserID: u2.ID,
+				}
+				go func() { <-roomEvents }()
+				res, err := api.AddUser(ctx, param)
+				Expect(err).To(BeNil())
+				Expect(res.Id).To(Equal(r1.ID))
+				Expect(res.Name).To(Equal(r1.Name))
+				Expect(res.Photo).To(Equal(r1.Photo))
+				Expect(res.Description).To(Equal(r1.Description))
+				Expect(res.Users).To(ConsistOf(
+					room.UserModelToProto(u1),
+					room.UserModelToProto(u2),
+				))
+			})
+		})
+
 		When("room not exist", func() {
-			It("should return room not found error", func() {})
+			It("should return room not found error", func() {
+				ctx := context.Background()
+				param := protos.UserRoomParam{
+					RoomID: "not-exist-room",
+					UserID: u2.ID,
+				}
+				res, err := api.AddUser(ctx, param)
+				Expect(res).To(BeNil())
+				Expect(err.Error()).To(Equal(room.RoomNotFoundError))
+			})
+		})
+
+		When("user not exist", func() {
+			It("should return user not found error", func() {
+				ctx := context.Background()
+				param := protos.UserRoomParam{
+					RoomID: r1.ID,
+					UserID: "not-exist-user",
+				}
+				res, err := api.AddUser(ctx, param)
+				Expect(res).To(BeNil())
+				Expect(err.Error()).To(Equal(room.UserNotFoundError))
+			})
 		})
 	})
 
 	Describe("KickUser", func() {
-		It("should remove user from a room", func() {})
-		It("should publish user left room event", func() {})
-		When("user already kicked from room", func() {
-			It("should return member not found error", func() {})
+		It("should remove user from a room", func() {
+			ctx := context.Background()
+			param := protos.UserRoomParam{
+				RoomID: r1.ID,
+				UserID: u2.ID,
+			}
+			go func() { <-roomEvents }()
+			res, err := api.KickUser(ctx, param)
+			Expect(err).To(BeNil())
+			Expect(res.Id).To(Equal(r1.ID))
+			Expect(res.Name).To(Equal(r1.Name))
+			Expect(res.Photo).To(Equal(r1.Photo))
+			Expect(res.Description).To(Equal(r1.Description))
+			Expect(res.Users).To(ConsistOf(
+				room.UserModelToProto(u1),
+			))
 		})
+
+		It("should publish user left room event", func(done Done) {
+			ctx := context.Background()
+			param := protos.UserRoomParam{
+				RoomID: r1.ID,
+				UserID: u2.ID,
+			}
+			go func() {
+				api.KickUser(ctx, param)
+			}()
+			event := <-roomEvents
+			Expect(event.Event).To(Equal(room.UserLeftRoom))
+			payload := event.Payload.(*room.RoomParticipantEventPayload)
+			Expect(payload.RoomID).To(Equal(param.RoomID))
+			Expect(payload.UserID).To(Equal(param.UserID))
+			close(done)
+		}, 0.3)
+
+		When("user not member of this room", func() {
+			It("should not kick this user", func() {
+				ctx := context.Background()
+				param := protos.UserRoomParam{
+					RoomID: r1.ID,
+					UserID: u3.ID,
+				}
+				go func() { <-roomEvents }()
+				res, err := api.KickUser(ctx, param)
+				Expect(err).To(BeNil())
+				Expect(res.Id).To(Equal(r1.ID))
+				Expect(res.Name).To(Equal(r1.Name))
+				Expect(res.Photo).To(Equal(r1.Photo))
+				Expect(res.Description).To(Equal(r1.Description))
+				Expect(res.Users).To(ConsistOf(
+					room.UserModelToProto(u1),
+					room.UserModelToProto(u2),
+				))
+			})
+		})
+
 		When("room not exist", func() {
-			It("should return room not found error", func() {})
+			It("should return room not found error", func() {
+				ctx := context.Background()
+				param := protos.UserRoomParam{
+					RoomID: "not-exist-room",
+					UserID: u3.ID,
+				}
+				res, err := api.KickUser(ctx, param)
+				Expect(res).To(BeNil())
+				Expect(err.Error()).To(Equal(room.RoomNotFoundError))
+			})
 		})
 	})
 
 	Describe("Destroy", func() {
-		It("should remove room from system", func() {})
-		It("should publish room removed event", func() {})
+		It("should remove room from system", func() {
+			ctx := context.Background()
+			param := protos.GetRoomParam{
+				Id: r1.ID,
+			}
+			go func() { <-roomEvents }()
+			res, err := api.Destroy(ctx, param)
+			Expect(err).To(BeNil())
+			Expect(res.Id).To(Equal(r1.ID))
+			Expect(res.Name).To(Equal(r1.Name))
+			Expect(res.Photo).To(Equal(r1.Photo))
+			Expect(res.Description).To(Equal(r1.Description))
+			Expect(res.Users).To(ConsistOf(
+				room.UserModelToProto(u1),
+				room.UserModelToProto(u2),
+			))
+			res, err = api.GetByID(ctx, param)
+			Expect(res).To(BeNil())
+			Expect(err.Error()).To(Equal(room.RoomNotFoundError))
+		})
+
+		It("should publish room removed event", func(done Done) {
+			ctx := context.Background()
+			param := protos.GetRoomParam{
+				Id: r1.ID,
+			}
+			go func() {
+				api.Destroy(ctx, param)
+			}()
+			event := <-roomEvents
+			Expect(event.Event).To(Equal(room.RoomDestroyed))
+			payload := event.Payload.(*room.RoomInstanceEventPayload)
+			Expect(payload.ID).To(Equal(r1.ID))
+			Expect(payload.Name).To(Equal(r1.Name))
+			Expect(payload.Photo).To(Equal(r1.Photo))
+			Expect(payload.Description).To(Equal(r1.Description))
+			Expect(payload.MemberIDs).To(ConsistOf(
+				u1.ID, u2.ID,
+			))
+			close(done)
+		}, 0.3)
+
 		When("room not exist", func() {
-			It("should return room not found error", func() {})
+			It("should return room not found error", func() {
+				ctx := context.Background()
+				param := protos.GetRoomParam{
+					Id: "not-exist-room",
+				}
+				res, err := api.Destroy(ctx, param)
+				Expect(res).To(BeNil())
+				Expect(err.Error()).To(Equal(room.RoomNotFoundError))
+			})
 		})
 	})
 })
