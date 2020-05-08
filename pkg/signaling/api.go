@@ -115,6 +115,11 @@ func (a *API) MyProfile(ctx context.Context) (*protos.Profile, error) {
 	if err != nil {
 		return nil, err
 	}
+	return a.GetMyProfile(user), nil
+}
+
+// GetMyProfile will add user & ICE server config to profile information
+func (a *API) GetMyProfile(user *room.UserModel) *protos.Profile {
 	// map ice server configurations
 	servers := []*protos.ICEServer{}
 	for _, ice := range *a.ICEServers {
@@ -141,7 +146,7 @@ func (a *API) MyProfile(ctx context.Context) (*protos.Profile, error) {
 		Name:    user.Name,
 		Photo:   user.Photo,
 		Servers: servers,
-	}, nil
+	}
 }
 
 // UpdateProfile will update user profile information like photo, name etc.
@@ -178,7 +183,8 @@ func (a *API) UpdateProfile(ctx context.Context, param protos.UpdateProfileParam
 			RoomIDs: roomIDs,
 		},
 	}
-	return nil, nil
+	// return profile information
+	return a.GetMyProfile(user), nil
 }
 
 // MyRooms will return list of room peer participates in
