@@ -17,10 +17,11 @@ const (
 )
 
 const (
-	UserAlreadyExist  = "user with same id already exists"
-	UserNotFoundError = "user not found"
-	RoomAlreadyExist  = "room with same id already exists"
-	RoomNotFoundError = "room not found"
+	UserAlreadyExist    = "user with same id already exists"
+	UserNotFoundError   = "user not found"
+	RoomAlreadyExist    = "room with same id already exists"
+	RoomNotFoundError   = "room not found"
+	MemberNotFoundError = "member not found"
 )
 
 // NewAPI will create new instance of room API
@@ -441,11 +442,14 @@ func (a *API) KickUser(ctx context.Context, param protos.UserRoomParam) (*protos
 		}
 		return nil, err
 	}
-	// append member to this room
+	// remove member from this room
 	err = a.DB.Model(&room).
 		Association("Members").
 		Delete(&UserModel{ID: param.UserID}).Error
 	if err != nil {
+		if err != gorm.ErrRecordNotFound {
+			return nil, fmt.Errorf(MemberNotFoundError)
+		}
 		return nil, err
 	}
 	// get updated room data
