@@ -62,7 +62,7 @@ type UserInstanceEventPayload struct {
 
 // IRoomService is service related to room & authorization management
 type IRoomService interface {
-	GetEvents() <-chan *RoomEvent
+	GetEvents() chan *RoomEvent
 	SetEvents(chan *RoomEvent)
 	RegisterUser(ctx context.Context, param protos.NewUserParam) (*protos.User, error)
 	GetUser(ctx context.Context, param protos.GetUserParam) (*protos.User, error)

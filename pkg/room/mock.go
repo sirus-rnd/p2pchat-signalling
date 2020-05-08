@@ -15,7 +15,7 @@ func FakeUser() *UserModel {
 func FakeRoom() *RoomModel {
 	return &RoomModel{
 		ID:          faker.RandomString(5),
-		Name:        faker.Name().Name(),
+		Name:        faker.Commerce().ProductName(),
 		Photo:       faker.Avatar().String(),
 		Description: faker.Lorem().Sentence(5),
 	}

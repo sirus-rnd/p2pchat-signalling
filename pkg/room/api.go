@@ -17,11 +17,11 @@ const (
 )
 
 const (
-	UserAlreadyExist    = "user with same id already exists"
-	UserNotFoundError   = "user not found"
-	RoomAlreadyExist    = "room with same id already exists"
-	RoomNotFoundError   = "room not found"
-	MemberNotFoundError = "member not found"
+	UserAlreadyExistError = "user with same id already exists"
+	UserNotFoundError     = "user not found"
+	RoomAlreadyExistError = "room with same id already exists"
+	RoomNotFoundError     = "room not found"
+	MemberNotFoundError   = "member not found"
 )
 
 // NewAPI will create new instance of room API
@@ -46,7 +46,7 @@ type API struct {
 }
 
 // GetEvents will return channel use to publish events
-func (a *API) GetEvents() <-chan *RoomEvent {
+func (a *API) GetEvents() chan *RoomEvent {
 	return a.Events
 }
 
@@ -97,7 +97,7 @@ func (a *API) GetRoomInstancePayload(room *RoomModel) (*RoomInstanceEventPayload
 // RegisterUser will register new user that can participate in a room
 func (a *API) RegisterUser(ctx context.Context, param protos.NewUserParam) (*protos.User, error) {
 	// check if user presents
-	var user *UserModel
+	user := &UserModel{}
 	err := a.DB.Where(&UserModel{ID: param.Id}).
 		First(user).Error
 	if err != nil {
@@ -105,8 +105,8 @@ func (a *API) RegisterUser(ctx context.Context, param protos.NewUserParam) (*pro
 			return nil, err
 		}
 	}
-	if user != nil {
-		return nil, fmt.Errorf(UserAlreadyExist)
+	if len(user.ID) > 0 {
+		return nil, fmt.Errorf(UserAlreadyExistError)
 	}
 	// create user
 	user = &UserModel{
@@ -137,7 +137,7 @@ func (a *API) GetUser(ctx context.Context, param protos.GetUserParam) (*protos.U
 	err := a.DB.Where(&UserModel{ID: param.Id}).
 		First(user).Error
 	if err != nil {
-		if err != gorm.ErrRecordNotFound {
+		if err == gorm.ErrRecordNotFound {
 			return nil, fmt.Errorf(UserNotFoundError)
 		}
 		return nil, err
@@ -154,6 +154,7 @@ func (a *API) GetUsers(ctx context.Context, param protos.PaginationParam) (*prot
 		Where("LOWER(name) LIKE ?", "%"+keyword+"%").
 		Offset(int(param.Offset)).
 		Limit(int(param.Limit)).
+		Order("id").
 		Find(&datas).
 		Error
 	if err != nil {
@@ -184,7 +185,7 @@ func (a *API) GetUserAccessToken(ctx context.Context, param protos.GetUserParam)
 	err := a.DB.Where(&UserModel{ID: param.Id}).
 		First(user).Error
 	if err != nil {
-		if err != gorm.ErrRecordNotFound {
+		if err == gorm.ErrRecordNotFound {
 			return nil, fmt.Errorf(UserNotFoundError)
 		}
 		return nil, err
@@ -207,7 +208,7 @@ func (a *API) UpdateUserProfile(ctx context.Context, param protos.UpdateUserProf
 	err := a.DB.Where(&UserModel{ID: param.Id}).
 		First(user).Error
 	if err != nil {
-		if err != gorm.ErrRecordNotFound {
+		if err == gorm.ErrRecordNotFound {
 			return nil, fmt.Errorf(UserNotFoundError)
 		}
 		return nil, err
@@ -233,12 +234,15 @@ func (a *API) UpdateUserProfile(ctx context.Context, param protos.UpdateUserProf
 }
 
 // RemoveUser will remove a user from system
-func (a *API) RemoveUser(ctx context.Context, param protos.GetRoomParam) (*protos.User, error) {
+func (a *API) RemoveUser(ctx context.Context, param protos.GetUserParam) (*protos.User, error) {
 	// remove user
-	var user *UserModel
-	err := a.DB.Where(&UserModel{ID: param.Id}).Delete(user).Error
+	user := &UserModel{}
+	err := a.DB.Where(&UserModel{ID: param.Id}).
+		First(user).
+		Delete(&UserModel{ID: param.Id}).
+		Error
 	if err != nil {
-		if err != gorm.ErrRecordNotFound {
+		if err == gorm.ErrRecordNotFound {
 			return nil, fmt.Errorf(UserNotFoundError)
 		}
 		return nil, err
@@ -259,7 +263,7 @@ func (a *API) RemoveUser(ctx context.Context, param protos.GetRoomParam) (*proto
 // Create will create a new room for user to participate in
 func (a *API) Create(ctx context.Context, param protos.NewRoomParam) (*protos.Room, error) {
 	// check if user presents
-	var room *RoomModel
+	room := &RoomModel{}
 	err := a.DB.Where(&RoomModel{ID: param.Id}).
 		First(room).Error
 	if err != nil {
@@ -267,8 +271,8 @@ func (a *API) Create(ctx context.Context, param protos.NewRoomParam) (*protos.Ro
 			return nil, err
 		}
 	}
-	if room != nil {
-		return nil, fmt.Errorf(RoomAlreadyExist)
+	if len(room.ID) > 0 {
+		return nil, fmt.Errorf(RoomAlreadyExistError)
 	}
 	// get all users
 	users := []*UserModel{}
@@ -310,7 +314,7 @@ func (a *API) Create(ctx context.Context, param protos.NewRoomParam) (*protos.Ro
 // GetByID will return a room and it's participant by it's id
 func (a *API) GetByID(ctx context.Context, param protos.GetRoomParam) (*protos.Room, error) {
 	// get room detail
-	var room *RoomModel
+	room := &RoomModel{}
 	err := a.DB.Preload("Members").
 		Where(&RoomModel{ID: param.Id}).
 		First(room).Error
@@ -333,13 +337,14 @@ func (a *API) GetAll(ctx context.Context, param protos.PaginationParam) (*protos
 		Where("LOWER(name) LIKE ?", "%"+keyword+"%").
 		Offset(int(param.Offset)).
 		Limit(int(param.Limit)).
+		Order("id").
 		Find(&datas).
 		Error
 	if err != nil {
 		return nil, err
 	}
 	err = a.DB.
-		Model(&UserModel{}).
+		Model(&RoomModel{}).
 		Where("LOWER(name) LIKE ?", "%"+keyword+"%").
 		Count(&count).Error
 	if err != nil {
@@ -359,12 +364,12 @@ func (a *API) GetAll(ctx context.Context, param protos.PaginationParam) (*protos
 // UpdateProfile will update room profile like description and photo
 func (a *API) UpdateProfile(ctx context.Context, param protos.UpdateRoomProfileParam) (*protos.Room, error) {
 	// get room detail
-	var room *RoomModel
+	room := &RoomModel{}
 	err := a.DB.Preload("Members").
 		Where(&RoomModel{ID: param.Id}).
 		First(room).Error
 	if err != nil {
-		if err != gorm.ErrRecordNotFound {
+		if err == gorm.ErrRecordNotFound {
 			return nil, fmt.Errorf(RoomNotFoundError)
 		}
 		return nil, err
@@ -393,12 +398,12 @@ func (a *API) UpdateProfile(ctx context.Context, param protos.UpdateRoomProfileP
 // AddUser to a room
 func (a *API) AddUser(ctx context.Context, param protos.UserRoomParam) (*protos.Room, error) {
 	// get room detail
-	var room *RoomModel
+	room := &RoomModel{}
 	err := a.DB.
 		Where(&RoomModel{ID: param.RoomID}).
 		First(room).Error
 	if err != nil {
-		if err != gorm.ErrRecordNotFound {
+		if err == gorm.ErrRecordNotFound {
 			return nil, fmt.Errorf(RoomNotFoundError)
 		}
 		return nil, err
@@ -432,12 +437,12 @@ func (a *API) AddUser(ctx context.Context, param protos.UserRoomParam) (*protos.
 // KickUser from a room
 func (a *API) KickUser(ctx context.Context, param protos.UserRoomParam) (*protos.Room, error) {
 	// get room detail
-	var room *RoomModel
+	room := &RoomModel{}
 	err := a.DB.
 		Where(&RoomModel{ID: param.RoomID}).
 		First(room).Error
 	if err != nil {
-		if err != gorm.ErrRecordNotFound {
+		if err == gorm.ErrRecordNotFound {
 			return nil, fmt.Errorf(RoomNotFoundError)
 		}
 		return nil, err
@@ -474,11 +479,12 @@ func (a *API) KickUser(ctx context.Context, param protos.UserRoomParam) (*protos
 // Destroy a room
 func (a *API) Destroy(ctx context.Context, param protos.GetRoomParam) (*protos.Room, error) {
 	// remove room
-	var room *RoomModel
+	room := &RoomModel{}
 	err := a.DB.Where(&UserModel{ID: param.Id}).
-		Delete(room).Error
+		First(room).
+		Delete(&UserModel{ID: param.Id}).Error
 	if err != nil {
-		if err != gorm.ErrRecordNotFound {
+		if err == gorm.ErrRecordNotFound {
 			return nil, fmt.Errorf(UserNotFoundError)
 		}
 		return nil, err
