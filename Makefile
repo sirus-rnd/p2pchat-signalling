@@ -32,7 +32,7 @@ lint:
 	revive -config revive.toml -formatter stylish $(PACKAGE_NAME) pkg/...
 
 test:
-	ginkgo -cover ./pkg/signaling
+	ginkgo -cover ./...
 
 proto:
 	protoc --proto_path protos/ --go_out=plugins=grpc:protos protos/signalling.proto

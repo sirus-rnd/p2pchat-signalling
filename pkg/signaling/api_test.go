@@ -484,12 +484,6 @@ var _ = Describe("API", func() {
 					To:          u3.ID,
 					Description: faker.Lorem().Paragraph(5),
 				}
-				command2 := &signaling.SDPCommand{
-					Type:        signaling.SDPAnswer,
-					From:        u1.ID,
-					To:          u2.ID,
-					Description: faker.Lorem().Paragraph(5),
-				}
 				go func() {
 					ctx := context.WithValue(context.Background(), room.UserIDKey, u2.ID)
 					api.SubscribeSDPCommand(ctx, commands, sdps)
@@ -499,13 +493,8 @@ var _ = Describe("API", func() {
 					commands <- nil
 					// send first command to u3
 					commands <- command
-					// send second command to u2
-					commands <- command2
 				}()
-				sdp := <-sdps
-				Expect(sdp.SenderID).To(Equal(command2.From))
-				Expect(sdp.Description).To(Equal(command2.Description))
-				Expect(sdp.Type).To(Equal(protos.SDPTypes_Answer))
+				Consistently(sdps).ShouldNot(Receive())
 				close(done)
 			}, 0.3)
 
@@ -518,12 +507,6 @@ var _ = Describe("API", func() {
 					To:          u3.ID,
 					Description: faker.Lorem().Paragraph(5),
 				}
-				command2 := &signaling.SDPCommand{
-					Type:        signaling.SDPOffer,
-					From:        u2.ID,
-					To:          u1.ID,
-					Description: faker.Lorem().Paragraph(5),
-				}
 				go func() {
 					ctx := context.WithValue(context.Background(), room.UserIDKey, u1.ID)
 					api.SubscribeSDPCommand(ctx, commands, sdps)
@@ -533,13 +516,8 @@ var _ = Describe("API", func() {
 					commands <- nil
 					// send first command to u3
 					commands <- command
-					// send second command to u1
-					commands <- command2
 				}()
-				sdp := <-sdps
-				Expect(sdp.SenderID).To(Equal(command2.From))
-				Expect(sdp.Description).To(Equal(command2.Description))
-				Expect(sdp.Type).To(Equal(protos.SDPTypes_Offer))
+				Consistently(sdps).ShouldNot(Receive())
 				close(done)
 			}, 0.3)
 		})
@@ -567,69 +545,477 @@ var _ = Describe("API", func() {
 		})
 	})
 
-	XDescribe("SubscribeRoomEvent", func() {
+	FDescribe("SubscribeRoomEvent", func() {
 		When("user joined my room", func() {
-			It("should receive user joined room event", func() {
-
-			})
+			It("should receive user joined room event", func(done Done) {
+				events := make(chan *room.RoomEvent)
+				myRoomEvents := make(chan *protos.RoomEvent)
+				eventPayload := room.RoomParticipantEventPayload{
+					RoomID: r1.ID,
+					UserID: u4.ID,
+					ParticipantIDs: []string{
+						u1.ID, u2.ID,
+					},
+				}
+				event := &room.RoomEvent{
+					Event:   room.UserJoinedRoom,
+					Payload: eventPayload,
+				}
+				go func() {
+					ctx := context.WithValue(
+						context.Background(), room.UserIDKey, u1.ID)
+					api.SubscribeRoomEvent(ctx, events, myRoomEvents)
+				}()
+				go func() {
+					events <- event
+				}()
+				e := <-myRoomEvents
+				Expect(e.Event).To(Equal(protos.RoomEvents_UserJoinedRoom))
+				payload := e.Payload.(*protos.RoomEvent_RoomParticipant)
+				Expect(payload.RoomParticipant.ParticipantID).
+					To(Equal(eventPayload.UserID))
+				Expect(payload.RoomParticipant.RoomID).
+					To(Equal(eventPayload.RoomID))
+				close(done)
+			}, 0.3)
 		})
 
 		When("user joined to other room", func() {
-			It("should not receive user joined room event", func() {
-
-			})
+			It("should not receive user joined room event", func(done Done) {
+				events := make(chan *room.RoomEvent)
+				myRoomEvents := make(chan *protos.RoomEvent)
+				eventPayload := room.RoomParticipantEventPayload{
+					RoomID: r3.ID,
+					UserID: u7.ID,
+					ParticipantIDs: []string{
+						u2.ID, u3.ID, u4.ID, u5.ID, u6.ID,
+					},
+				}
+				event := &room.RoomEvent{
+					Event:   room.UserJoinedRoom,
+					Payload: eventPayload,
+				}
+				go func() {
+					ctx := context.WithValue(
+						context.Background(), room.UserIDKey, u1.ID)
+					api.SubscribeRoomEvent(ctx, events, myRoomEvents)
+				}()
+				go func() {
+					events <- event
+				}()
+				Consistently(myRoomEvents).ShouldNot(Receive())
+				close(done)
+			}, 0.3)
 		})
 
 		When("user left my room", func() {
-			It("should receive user left room event", func() {
-
-			})
+			It("should receive user left room event", func(done Done) {
+				events := make(chan *room.RoomEvent)
+				myRoomEvents := make(chan *protos.RoomEvent)
+				eventPayload := room.RoomParticipantEventPayload{
+					RoomID: r1.ID,
+					UserID: u2.ID,
+					ParticipantIDs: []string{
+						u1.ID, u2.ID,
+					},
+				}
+				event := &room.RoomEvent{
+					Event:   room.UserLeftRoom,
+					Payload: eventPayload,
+				}
+				go func() {
+					ctx := context.WithValue(
+						context.Background(), room.UserIDKey, u1.ID)
+					api.SubscribeRoomEvent(ctx, events, myRoomEvents)
+				}()
+				go func() {
+					events <- event
+				}()
+				e := <-myRoomEvents
+				Expect(e.Event).To(Equal(protos.RoomEvents_UserLeftRoom))
+				payload := e.Payload.(*protos.RoomEvent_RoomParticipant)
+				Expect(payload.RoomParticipant.ParticipantID).
+					To(Equal(eventPayload.UserID))
+				Expect(payload.RoomParticipant.RoomID).
+					To(Equal(eventPayload.RoomID))
+				close(done)
+			}, 0.3)
 		})
 
 		When("user left other room", func() {
-			It("should not receive user left room event", func() {
-
-			})
+			It("should not receive user left room event", func(done Done) {
+				events := make(chan *room.RoomEvent)
+				myRoomEvents := make(chan *protos.RoomEvent)
+				eventPayload := room.RoomParticipantEventPayload{
+					RoomID: r3.ID,
+					UserID: u3.ID,
+					ParticipantIDs: []string{
+						u2.ID, u3.ID, u4.ID, u5.ID, u6.ID,
+					},
+				}
+				event := &room.RoomEvent{
+					Event:   room.UserLeftRoom,
+					Payload: eventPayload,
+				}
+				go func() {
+					ctx := context.WithValue(
+						context.Background(), room.UserIDKey, u1.ID)
+					api.SubscribeRoomEvent(ctx, events, myRoomEvents)
+				}()
+				go func() {
+					events <- event
+				}()
+				Consistently(myRoomEvents).ShouldNot(Receive())
+				close(done)
+			}, 0.3)
 		})
 
 		When("new room created with me in it", func() {
-			It("should receive room created event", func() {})
+			It("should receive room created event", func(done Done) {
+				events := make(chan *room.RoomEvent)
+				myRoomEvents := make(chan *protos.RoomEvent)
+				r5 := room.FakeRoom()
+				eventPayload := room.RoomInstanceEventPayload{
+					ID:          r5.ID,
+					Description: r5.Description,
+					Name:        r5.Name,
+					Photo:       r5.Photo,
+					MemberIDs: []string{
+						u1.ID, u3.ID, u5.ID,
+					},
+				}
+				event := &room.RoomEvent{
+					Event:   room.RoomCreated,
+					Payload: eventPayload,
+				}
+				go func() {
+					ctx := context.WithValue(
+						context.Background(), room.UserIDKey, u1.ID)
+					api.SubscribeRoomEvent(ctx, events, myRoomEvents)
+				}()
+				go func() {
+					events <- event
+				}()
+				e := <-myRoomEvents
+				Expect(e.Event).To(Equal(protos.RoomEvents_RoomCreated))
+				payload := e.Payload.(*protos.RoomEvent_RoomInstance)
+				Expect(payload.RoomInstance.Id).
+					To(Equal(eventPayload.ID))
+				Expect(payload.RoomInstance.Name).
+					To(Equal(eventPayload.Name))
+				Expect(payload.RoomInstance.Description).
+					To(Equal(eventPayload.Description))
+				Expect(payload.RoomInstance.Photo).
+					To(Equal(eventPayload.Photo))
+				close(done)
+			}, 0.3)
 		})
 
 		When("new room created without me in it", func() {
-			It("should not receive room created event", func() {})
+			It("should not receive room created event", func(done Done) {
+				events := make(chan *room.RoomEvent)
+				myRoomEvents := make(chan *protos.RoomEvent)
+				r5 := room.FakeRoom()
+				eventPayload := room.RoomInstanceEventPayload{
+					ID:          r5.ID,
+					Description: r5.Description,
+					Name:        r5.Name,
+					Photo:       r5.Photo,
+					MemberIDs: []string{
+						u2.ID, u3.ID, u5.ID,
+					},
+				}
+				event := &room.RoomEvent{
+					Event:   room.RoomCreated,
+					Payload: eventPayload,
+				}
+				go func() {
+					ctx := context.WithValue(
+						context.Background(), room.UserIDKey, u1.ID)
+					api.SubscribeRoomEvent(ctx, events, myRoomEvents)
+				}()
+				go func() {
+					events <- event
+				}()
+				Consistently(myRoomEvents).ShouldNot(Receive())
+				close(done)
+			}, 0.3)
 		})
 
 		When("my room profile updated", func() {
-			It("should receive room profile updated event", func() {})
+			It("should receive room profile updated event", func(done Done) {
+				events := make(chan *room.RoomEvent)
+				myRoomEvents := make(chan *protos.RoomEvent)
+				r5 := room.FakeRoom()
+				eventPayload := room.RoomInstanceEventPayload{
+					ID:          r5.ID,
+					Description: r5.Description,
+					Name:        r5.Name,
+					Photo:       r5.Photo,
+					MemberIDs: []string{
+						u1.ID, u3.ID, u5.ID,
+					},
+				}
+				event := &room.RoomEvent{
+					Event:   room.RoomProfileUpdated,
+					Payload: eventPayload,
+				}
+				go func() {
+					ctx := context.WithValue(
+						context.Background(), room.UserIDKey, u1.ID)
+					api.SubscribeRoomEvent(ctx, events, myRoomEvents)
+				}()
+				go func() {
+					events <- event
+				}()
+				e := <-myRoomEvents
+				Expect(e.Event).To(Equal(protos.RoomEvents_RoomProfileUpdated))
+				payload := e.Payload.(*protos.RoomEvent_RoomInstance)
+				Expect(payload.RoomInstance.Id).
+					To(Equal(eventPayload.ID))
+				Expect(payload.RoomInstance.Name).
+					To(Equal(eventPayload.Name))
+				Expect(payload.RoomInstance.Description).
+					To(Equal(eventPayload.Description))
+				Expect(payload.RoomInstance.Photo).
+					To(Equal(eventPayload.Photo))
+				close(done)
+			}, 0.3)
 		})
 
 		When("other room profile updated", func() {
-			It("should not receive room profile updated event", func() {})
+			It("should not receive room profile updated event", func(done Done) {
+				events := make(chan *room.RoomEvent)
+				myRoomEvents := make(chan *protos.RoomEvent)
+				r5 := room.FakeRoom()
+				eventPayload := room.RoomInstanceEventPayload{
+					ID:          r5.ID,
+					Description: r5.Description,
+					Name:        r5.Name,
+					Photo:       r5.Photo,
+					MemberIDs: []string{
+						u2.ID, u3.ID, u5.ID,
+					},
+				}
+				event := &room.RoomEvent{
+					Event:   room.RoomProfileUpdated,
+					Payload: eventPayload,
+				}
+				go func() {
+					ctx := context.WithValue(
+						context.Background(), room.UserIDKey, u1.ID)
+					api.SubscribeRoomEvent(ctx, events, myRoomEvents)
+				}()
+				go func() {
+					events <- event
+				}()
+				Consistently(myRoomEvents).ShouldNot(Receive())
+				close(done)
+			}, 0.3)
 		})
 
 		When("my room destroyed", func() {
-			It("should receive room destoryed event", func() {})
+			It("should receive room destoryed event", func(done Done) {
+				events := make(chan *room.RoomEvent)
+				myRoomEvents := make(chan *protos.RoomEvent)
+				r5 := room.FakeRoom()
+				eventPayload := room.RoomInstanceEventPayload{
+					ID:          r5.ID,
+					Description: r5.Description,
+					Name:        r5.Name,
+					Photo:       r5.Photo,
+					MemberIDs: []string{
+						u1.ID, u3.ID, u5.ID,
+					},
+				}
+				event := &room.RoomEvent{
+					Event:   room.RoomDestroyed,
+					Payload: eventPayload,
+				}
+				go func() {
+					ctx := context.WithValue(
+						context.Background(), room.UserIDKey, u1.ID)
+					api.SubscribeRoomEvent(ctx, events, myRoomEvents)
+				}()
+				go func() {
+					events <- event
+				}()
+				e := <-myRoomEvents
+				Expect(e.Event).To(Equal(protos.RoomEvents_RoomDestroyed))
+				payload := e.Payload.(*protos.RoomEvent_RoomInstance)
+				Expect(payload.RoomInstance.Id).
+					To(Equal(eventPayload.ID))
+				Expect(payload.RoomInstance.Name).
+					To(Equal(eventPayload.Name))
+				Expect(payload.RoomInstance.Description).
+					To(Equal(eventPayload.Description))
+				Expect(payload.RoomInstance.Photo).
+					To(Equal(eventPayload.Photo))
+				close(done)
+			}, 0.3)
 		})
 
 		When("other room destroyed", func() {
-			It("should not receive room destoryed event", func() {})
+			It("should not receive room destoryed event", func(done Done) {
+				events := make(chan *room.RoomEvent)
+				myRoomEvents := make(chan *protos.RoomEvent)
+				r5 := room.FakeRoom()
+				eventPayload := room.RoomInstanceEventPayload{
+					ID:          r5.ID,
+					Description: r5.Description,
+					Name:        r5.Name,
+					Photo:       r5.Photo,
+					MemberIDs: []string{
+						u2.ID, u3.ID, u5.ID,
+					},
+				}
+				event := &room.RoomEvent{
+					Event:   room.RoomDestroyed,
+					Payload: eventPayload,
+				}
+				go func() {
+					ctx := context.WithValue(
+						context.Background(), room.UserIDKey, u1.ID)
+					api.SubscribeRoomEvent(ctx, events, myRoomEvents)
+				}()
+				go func() {
+					events <- event
+				}()
+				Consistently(myRoomEvents).ShouldNot(Receive())
+				close(done)
+			}, 0.3)
 		})
 
 		When("user in my room has profile updated", func() {
-			It("should receive user profile updated event", func() {})
+			It("should receive user profile updated event", func(done Done) {
+				events := make(chan *room.RoomEvent)
+				myRoomEvents := make(chan *protos.RoomEvent)
+				eventPayload := room.UserInstanceEventPayload{
+					ID:    u2.ID,
+					Name:  u2.Name,
+					Photo: u2.Photo,
+					RoomIDs: []string{
+						r1.ID, r3.ID,
+					},
+				}
+				event := &room.RoomEvent{
+					Event:   room.UserProfileUpdated,
+					Payload: eventPayload,
+				}
+				go func() {
+					ctx := context.WithValue(
+						context.Background(), room.UserIDKey, u1.ID)
+					api.SubscribeRoomEvent(ctx, events, myRoomEvents)
+				}()
+				go func() {
+					events <- event
+				}()
+				e := <-myRoomEvents
+				Expect(e.Event).To(Equal(protos.RoomEvents_UserProfileUpdated))
+				payload := e.Payload.(*protos.RoomEvent_UserInstance)
+				Expect(payload.UserInstance.Id).
+					To(Equal(eventPayload.ID))
+				Expect(payload.UserInstance.Name).
+					To(Equal(eventPayload.Name))
+				Expect(payload.UserInstance.Photo).
+					To(Equal(eventPayload.Photo))
+				close(done)
+			}, 0.3)
 		})
 
 		When("user in other room has profile updated", func() {
-			It("should not receive user profile updated event", func() {})
+			It("should not receive user profile updated event", func(done Done) {
+				events := make(chan *room.RoomEvent)
+				myRoomEvents := make(chan *protos.RoomEvent)
+				eventPayload := room.UserInstanceEventPayload{
+					ID:    u2.ID,
+					Name:  u2.Name,
+					Photo: u2.Photo,
+					RoomIDs: []string{
+						r3.ID, r4.ID,
+					},
+				}
+				event := &room.RoomEvent{
+					Event:   room.UserProfileUpdated,
+					Payload: eventPayload,
+				}
+				go func() {
+					ctx := context.WithValue(
+						context.Background(), room.UserIDKey, u1.ID)
+					api.SubscribeRoomEvent(ctx, events, myRoomEvents)
+				}()
+				go func() {
+					events <- event
+				}()
+				Consistently(myRoomEvents).ShouldNot(Receive())
+				close(done)
+			}, 0.3)
 		})
 
 		When("user in my room has removed", func() {
-			It("should receive user removed event", func() {})
+			It("should receive user removed event", func(done Done) {
+				events := make(chan *room.RoomEvent)
+				myRoomEvents := make(chan *protos.RoomEvent)
+				eventPayload := room.UserInstanceEventPayload{
+					ID:    u2.ID,
+					Name:  u2.Name,
+					Photo: u2.Photo,
+					RoomIDs: []string{
+						r1.ID, r3.ID,
+					},
+				}
+				event := &room.RoomEvent{
+					Event:   room.UserRemoved,
+					Payload: eventPayload,
+				}
+				go func() {
+					ctx := context.WithValue(
+						context.Background(), room.UserIDKey, u1.ID)
+					api.SubscribeRoomEvent(ctx, events, myRoomEvents)
+				}()
+				go func() {
+					events <- event
+				}()
+				e := <-myRoomEvents
+				Expect(e.Event).To(Equal(protos.RoomEvents_UserRemoved))
+				payload := e.Payload.(*protos.RoomEvent_UserInstance)
+				Expect(payload.UserInstance.Id).
+					To(Equal(eventPayload.ID))
+				Expect(payload.UserInstance.Name).
+					To(Equal(eventPayload.Name))
+				Expect(payload.UserInstance.Photo).
+					To(Equal(eventPayload.Photo))
+				close(done)
+			}, 0.3)
 		})
 
 		When("user in other room has removed", func() {
-			It("should not receive user removed event", func() {})
+			It("should not receive user removed event", func(done Done) {
+				events := make(chan *room.RoomEvent)
+				myRoomEvents := make(chan *protos.RoomEvent)
+				eventPayload := room.UserInstanceEventPayload{
+					ID:    u2.ID,
+					Name:  u2.Name,
+					Photo: u2.Photo,
+					RoomIDs: []string{
+						r3.ID, r4.ID,
+					},
+				}
+				event := &room.RoomEvent{
+					Event:   room.UserRemoved,
+					Payload: eventPayload,
+				}
+				go func() {
+					ctx := context.WithValue(
+						context.Background(), room.UserIDKey, u1.ID)
+					api.SubscribeRoomEvent(ctx, events, myRoomEvents)
+				}()
+				go func() {
+					events <- event
+				}()
+				Consistently(myRoomEvents).ShouldNot(Receive())
+				close(done)
+			}, 0.3)
 		})
 	})
 })
