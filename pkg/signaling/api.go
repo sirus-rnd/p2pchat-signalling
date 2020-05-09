@@ -36,12 +36,12 @@ func NewAPI(
 
 // ICEServer define ICE server configuration for peer to make ICE candidates between them
 type ICEServer struct {
-	URL            string  `json:"url"`
-	Username       *string `json:"username"`
-	CredentialType *int32  `json:"credential_type"`
-	Password       *string `json:"password"`
-	AccessToken    *string `json:"access_token"`
-	MacKey         *string `json:"mac_key"`
+	URL            string `json:"url"`
+	Username       string `json:"username"`
+	CredentialType int    `json:"credential_type"`
+	Password       string `json:"password"`
+	AccessToken    string `json:"access_token"`
+	MacKey         string `json:"mac_key"`
 }
 
 // SDPTypeProtoToCommand mapping from  proto to command
@@ -71,7 +71,7 @@ type API struct {
 }
 
 // GetCommands return SDP command channel
-func (a *API) GetCommands() <-chan *SDPCommand {
+func (a *API) GetCommands() chan *SDPCommand {
 	return a.Commands
 }
 
@@ -80,12 +80,12 @@ func (a *API) SetCommands(commands chan *SDPCommand) {
 	a.Commands = commands
 }
 
-// GetRoomEvents will return channel use to publish events
-func (a *API) GetRoomEvents() <-chan *room.RoomEvent {
+// GetRoomEvents will return channel use to publish room events
+func (a *API) GetRoomEvents() chan *room.RoomEvent {
 	return a.Events
 }
 
-// SetRoomEvents will set channel use to publish events
+// SetRoomEvents will set channel use to publish room events
 func (a *API) SetRoomEvents(events chan *room.RoomEvent) {
 	a.Events = events
 }
@@ -101,7 +101,7 @@ func (a *API) GetUserContext(ctx context.Context) (*room.UserModel, error) {
 		Where(&room.UserModel{ID: userID}).
 		First(user).Error
 	if err != nil {
-		if err != gorm.ErrRecordNotFound {
+		if err == gorm.ErrRecordNotFound {
 			return nil, fmt.Errorf(room.UserNotFoundError)
 		}
 		return nil, err
@@ -124,21 +124,11 @@ func (a *API) GetMyProfile(user *room.UserModel) *protos.Profile {
 	servers := []*protos.ICEServer{}
 	for _, ice := range *a.ICEServers {
 		server := &protos.ICEServer{Url: ice.URL}
-		if ice.CredentialType != nil {
-			server.CredentialType = protos.ICECredentialType(*ice.CredentialType)
-		}
-		if ice.Username != nil {
-			server.Username = *ice.Username
-		}
-		if ice.Password != nil {
-			server.Password = *ice.Password
-		}
-		if ice.AccessToken != nil {
-			server.AccessToken = *ice.AccessToken
-		}
-		if ice.MacKey != nil {
-			server.MacKey = *ice.MacKey
-		}
+		server.CredentialType = protos.ICECredentialType(ice.CredentialType)
+		server.Username = ice.Username
+		server.Password = ice.Password
+		server.AccessToken = ice.AccessToken
+		server.MacKey = ice.MacKey
 		servers = append(servers, server)
 	}
 	return &protos.Profile{
@@ -241,6 +231,9 @@ func (a *API) MyRoomInfo(ctx context.Context, param protos.GetRoomParam) (*proto
 		First(r, "id = ?", param.Id).
 		Error
 	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, fmt.Errorf(room.RoomNotFoundError)
+		}
 		return nil, err
 	}
 	// check if user are member this room
@@ -268,7 +261,7 @@ func (a *API) OfferSDP(ctx context.Context, param protos.SDPParam) error {
 		Type:        SDPOffer,
 		From:        user.ID,
 		To:          param.UserID,
-		Description: param.Sdp.Description,
+		Description: param.Description,
 	}
 	return nil
 }
@@ -283,7 +276,7 @@ func (a *API) AnswerSDP(ctx context.Context, param protos.SDPParam) error {
 		Type:        SDPAnswer,
 		From:        user.ID,
 		To:          param.UserID,
-		Description: param.Sdp.Description,
+		Description: param.Description,
 	}
 	return nil
 }
@@ -318,8 +311,8 @@ func (a *API) SubscribeSDPCommand(
 	}
 }
 
-// IsUserInMyRooms return true when user participate in one of my rooms
-func (a *API) IsUserInMyRooms(
+// IsItMyRooms return true when list of room in one of my rooms
+func (a *API) IsItMyRooms(
 	me *room.UserModel,
 	roomIDs []string,
 ) (*bool, error) {
@@ -468,7 +461,7 @@ func (a *API) SubscribeRoomEvent(
 					if !ok {
 						continue
 					}
-					inMyRoom, err := a.IsUserInMyRooms(user, payload.RoomIDs)
+					inMyRoom, err := a.IsItMyRooms(user, payload.RoomIDs)
 					if err != nil {
 						a.Logger.Error(err)
 						continue
@@ -493,7 +486,7 @@ func (a *API) SubscribeRoomEvent(
 					if !ok {
 						continue
 					}
-					inMyRoom, err := a.IsUserInMyRooms(user, payload.RoomIDs)
+					inMyRoom, err := a.IsItMyRooms(user, payload.RoomIDs)
 					if err != nil {
 						a.Logger.Error(err)
 						continue

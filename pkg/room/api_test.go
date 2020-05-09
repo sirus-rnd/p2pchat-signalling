@@ -735,6 +735,21 @@ var _ = Describe("API", func() {
 			))
 		})
 
+		It("should not register member as new user", func() {
+			ctx := context.Background()
+			param := protos.UserRoomParam{
+				RoomID: r1.ID,
+				UserID: u6.ID,
+			}
+			go func() { <-roomEvents }()
+			api.AddUser(ctx, param)
+			count := 0
+			db.Model(&room.UserModel{}).
+				Where("id = ?", param.UserID).
+				Count(&count)
+			Expect(count).To(Equal(1))
+		})
+
 		It("should publish user joined room event", func(done Done) {
 			ctx := context.Background()
 			param := protos.UserRoomParam{
@@ -817,6 +832,21 @@ var _ = Describe("API", func() {
 			Expect(res.Users).To(ConsistOf(
 				room.UserModelToProto(u1),
 			))
+		})
+
+		It("should not remove member's user record", func() {
+			ctx := context.Background()
+			param := protos.UserRoomParam{
+				RoomID: r1.ID,
+				UserID: u2.ID,
+			}
+			go func() { <-roomEvents }()
+			api.KickUser(ctx, param)
+			count := 0
+			db.Model(&room.UserModel{}).
+				Where("id = ?", param.UserID).
+				Count(&count)
+			Expect(count).To(Equal(1))
 		})
 
 		It("should publish user left room event", func(done Done) {

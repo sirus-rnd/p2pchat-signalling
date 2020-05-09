@@ -133,7 +133,7 @@ message PaginationParam {
 }
 
 message SDPParam {
-  SDP sdp = 1;
+  string description = 1;
   string userID = 2;
 }
 

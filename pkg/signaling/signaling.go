@@ -31,9 +31,9 @@ type SDPCommand struct {
 
 // ISignalingService is service related to signaling from peer to peer
 type ISignalingService interface {
-	GetCommands() <-chan *SDPCommand
+	GetCommands() chan *SDPCommand
 	SetCommands(commands chan *SDPCommand)
-	GetRoomEvents() <-chan *room.RoomEvent
+	GetRoomEvents() chan *room.RoomEvent
 	SetRoomEvents(chan *room.RoomEvent)
 	MyProfile(ctx context.Context) (*protos.Profile, error)
 	UpdateProfile(ctx context.Context, param protos.UpdateProfileParam) (*protos.Profile, error)
