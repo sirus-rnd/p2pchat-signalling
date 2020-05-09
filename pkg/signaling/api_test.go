@@ -545,7 +545,7 @@ var _ = Describe("API", func() {
 		})
 	})
 
-	FDescribe("SubscribeRoomEvent", func() {
+	Describe("SubscribeRoomEvent", func() {
 		When("user joined my room", func() {
 			It("should receive user joined room event", func(done Done) {
 				events := make(chan *room.RoomEvent)
