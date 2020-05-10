@@ -11,8 +11,12 @@ import (
 	"github.com/nats-io/nats.go"
 	"go.sirus.dev/p2p-comm/signalling/pkg/room"
 	"go.sirus.dev/p2p-comm/signalling/pkg/signaling"
+	"go.sirus.dev/p2p-comm/signalling/pkg/utils"
 	"go.sirus.dev/p2p-comm/signalling/protos"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 // NewSignalingService will create new instance of SignalingService
@@ -21,12 +25,14 @@ func NewSignalingService(
 	logger *zap.SugaredLogger,
 	nats *nats.EncodedConn,
 	eventNamespace string,
+	accessSecret string,
 ) *SignalingService {
 	return &SignalingService{
 		Signaling:      signaling,
 		Logger:         logger,
 		Nats:           nats,
 		EventNamespace: eventNamespace,
+		AccessSecret:   accessSecret,
 	}
 }
 
@@ -37,6 +43,30 @@ type SignalingService struct {
 	Logger         *zap.SugaredLogger
 	Nats           *nats.EncodedConn
 	EventNamespace string
+	AccessSecret   string
+}
+
+// SetUserContext will set user access context for each grpc calls
+// based on access token at metadata
+func (s *SignalingService) SetUserContext(ctx context.Context) (context.Context, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, status.Error(codes.PermissionDenied, "metadata not found")
+	}
+	tokens := md.Get("token")
+	if len(tokens) == 0 {
+		return nil, status.Error(codes.PermissionDenied, "token not found on metadata")
+	}
+	claims, err := utils.ValidateToken(s.AccessSecret, tokens[0])
+	if err != nil {
+		return nil, status.Error(codes.PermissionDenied, "invalid token")
+	}
+	userID, ok := claims[room.UserIDKey].(string)
+	if !ok {
+		return nil, status.Error(codes.PermissionDenied, "user context not found")
+	}
+	ctx = context.WithValue(ctx, room.UserIDKey, userID)
+	return ctx, nil
 }
 
 // GetProfile return user profile and configuration
@@ -44,6 +74,10 @@ func (s *SignalingService) GetProfile(
 	ctx context.Context,
 	req *empty.Empty,
 ) (*protos.Profile, error) {
+	ctx, err := s.SetUserContext(ctx)
+	if err != nil {
+		return nil, err
+	}
 	return s.Signaling.MyProfile(ctx)
 }
 
@@ -52,6 +86,10 @@ func (s *SignalingService) UpdateProfile(
 	ctx context.Context,
 	req *protos.UpdateProfileParam,
 ) (*protos.Profile, error) {
+	ctx, err := s.SetUserContext(ctx)
+	if err != nil {
+		return nil, err
+	}
 	return s.Signaling.UpdateProfile(ctx, req)
 }
 
@@ -60,6 +98,10 @@ func (s *SignalingService) GetMyRooms(
 	ctx context.Context,
 	req *empty.Empty,
 ) (*protos.Rooms, error) {
+	ctx, err := s.SetUserContext(ctx)
+	if err != nil {
+		return nil, err
+	}
 	return s.Signaling.MyRooms(ctx)
 }
 
@@ -68,6 +110,10 @@ func (s *SignalingService) GetRoom(
 	ctx context.Context,
 	req *protos.GetRoomParam,
 ) (*protos.Room, error) {
+	ctx, err := s.SetUserContext(ctx)
+	if err != nil {
+		return nil, err
+	}
 	return s.Signaling.MyRoomInfo(ctx, req)
 }
 
@@ -76,7 +122,11 @@ func (s *SignalingService) OfferSessionDescription(
 	ctx context.Context,
 	req *protos.SDPParam,
 ) (*empty.Empty, error) {
-	err := s.Signaling.OfferSDP(ctx, req)
+	ctx, err := s.SetUserContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	err = s.Signaling.OfferSDP(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +138,11 @@ func (s *SignalingService) AnswerSessionDescription(
 	ctx context.Context,
 	req *protos.SDPParam,
 ) (*empty.Empty, error) {
-	err := s.Signaling.AnswerSDP(ctx, req)
+	ctx, err := s.SetUserContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	err = s.Signaling.AnswerSDP(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -101,6 +155,10 @@ func (s *SignalingService) SubscribeSDPCommand(
 	srv protos.SignalingService_SubscribeSDPCommandServer,
 ) error {
 	ctx := srv.Context()
+	ctx, err := s.SetUserContext(ctx)
+	if err != nil {
+		return err
+	}
 	commands := make(chan *signaling.SDPCommand)
 	sdps := make(chan *protos.SDP)
 	var errc error
@@ -132,6 +190,10 @@ func (s *SignalingService) SubscribeRoomEvent(
 	srv protos.SignalingService_SubscribeRoomEventServer,
 ) error {
 	ctx := srv.Context()
+	ctx, err := s.SetUserContext(ctx)
+	if err != nil {
+		return err
+	}
 	events := make(chan *room.RoomEvent)
 	protoEvents := make(chan *protos.RoomEvent)
 	var errc error
@@ -207,7 +269,7 @@ func (s *SignalingService) SubscribeNatsRoomEvent(
 		switch {
 
 		// participant event on room
-		case contains([]string{
+		case utils.ContainString([]string{
 			room.UserLeftRoom,
 			room.UserJoinedRoom,
 		}, subject):
@@ -219,7 +281,7 @@ func (s *SignalingService) SubscribeNatsRoomEvent(
 			}
 
 		// room instance event
-		case contains([]string{
+		case utils.ContainString([]string{
 			room.RoomCreated,
 			room.RoomProfileUpdated,
 			room.RoomDestroyed,
@@ -232,7 +294,7 @@ func (s *SignalingService) SubscribeNatsRoomEvent(
 			}
 
 		// user instance event
-		case contains([]string{
+		case utils.ContainString([]string{
 			room.UserRegistered,
 			room.UserProfileUpdated,
 			room.UserRemoved,

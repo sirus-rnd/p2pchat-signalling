@@ -8,6 +8,7 @@ import (
 	"github.com/golang/protobuf/ptypes"
 	"github.com/jinzhu/gorm"
 	"go.sirus.dev/p2p-comm/signalling/pkg/room"
+	"go.sirus.dev/p2p-comm/signalling/pkg/utils"
 	"go.sirus.dev/p2p-comm/signalling/protos"
 	"go.uber.org/zap"
 )
@@ -36,12 +37,12 @@ func NewAPI(
 
 // ICEServer define ICE server configuration for peer to make ICE candidates between them
 type ICEServer struct {
-	URL            string `json:"url"`
-	Username       string `json:"username"`
-	CredentialType int    `json:"credential_type"`
-	Password       string `json:"password"`
-	AccessToken    string `json:"access_token"`
-	MacKey         string `json:"mac_key"`
+	URL            string `json:"url" mapstructure:"url"`
+	Username       string `json:"username" mapstructure:"username"`
+	CredentialType int    `json:"credential_type" mapstructure:"credential_type"`
+	Password       string `json:"password" mapstructure:"password"`
+	AccessToken    string `json:"access_token" mapstructure:"access_token"`
+	MacKey         string `json:"mac_key" mapstructure:"mac_key"`
 }
 
 // SDPTypeProtoToCommand mapping from  proto to command
@@ -327,7 +328,7 @@ func (a *API) IsItMyRooms(
 	}
 	exist := false
 	for _, r := range *myRooms {
-		if containString(roomIDs, r.ID) {
+		if utils.ContainString(roomIDs, r.ID) {
 			exist = true
 			break
 		}
@@ -360,7 +361,7 @@ func (a *API) SubscribeRoomEvent(
 					if !ok {
 						continue
 					}
-					if !containString(payload.ParticipantIDs, user.ID) {
+					if !utils.ContainString(payload.ParticipantIDs, user.ID) {
 						continue
 					}
 					roomEvent = &protos.RoomEvent{
@@ -379,7 +380,7 @@ func (a *API) SubscribeRoomEvent(
 					if !ok {
 						continue
 					}
-					if !containString(payload.ParticipantIDs, user.ID) {
+					if !utils.ContainString(payload.ParticipantIDs, user.ID) {
 						continue
 					}
 					roomEvent = &protos.RoomEvent{
@@ -398,7 +399,7 @@ func (a *API) SubscribeRoomEvent(
 					if !ok {
 						continue
 					}
-					if !containString(payload.MemberIDs, user.ID) {
+					if !utils.ContainString(payload.MemberIDs, user.ID) {
 						continue
 					}
 					roomEvent = &protos.RoomEvent{
@@ -419,7 +420,7 @@ func (a *API) SubscribeRoomEvent(
 					if !ok {
 						continue
 					}
-					if !containString(payload.MemberIDs, user.ID) {
+					if !utils.ContainString(payload.MemberIDs, user.ID) {
 						continue
 					}
 					roomEvent = &protos.RoomEvent{
@@ -440,7 +441,7 @@ func (a *API) SubscribeRoomEvent(
 					if !ok {
 						continue
 					}
-					if !containString(payload.MemberIDs, user.ID) {
+					if !utils.ContainString(payload.MemberIDs, user.ID) {
 						continue
 					}
 					roomEvent = &protos.RoomEvent{
@@ -521,14 +522,4 @@ func (a *API) SubscribeRoomEvent(
 			return nil
 		}
 	}
-}
-
-func containString(list []string, item string) bool {
-	for _, i := range list {
-		if i != item {
-			continue
-		}
-		return true
-	}
-	return false
 }
