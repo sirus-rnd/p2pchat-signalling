@@ -230,6 +230,8 @@ func (s *SignalingService) Run() {
 	defer close(s1c)
 	s.Signaling.SetRoomEvents(r1c)
 	s.Signaling.SetCommands(s1c)
+	go s.PublishRoomEvent(r1c)
+	go s.PublishSDPCommand(s1c)
 
 	// keep it running
 	for {
@@ -273,7 +275,7 @@ func (s *SignalingService) SubscribeNatsRoomEvent(
 			room.UserLeftRoom,
 			room.UserJoinedRoom,
 		}, subject):
-			payload := &room.RoomParticipantEventPayload{}
+			payload = &room.RoomParticipantEventPayload{}
 			err := json.Unmarshal(m.Data, payload)
 			if err != nil {
 				s.Logger.Error(err)
@@ -286,7 +288,7 @@ func (s *SignalingService) SubscribeNatsRoomEvent(
 			room.RoomProfileUpdated,
 			room.RoomDestroyed,
 		}, subject):
-			payload := &room.RoomInstanceEventPayload{}
+			payload = &room.RoomInstanceEventPayload{}
 			err := json.Unmarshal(m.Data, payload)
 			if err != nil {
 				s.Logger.Error(err)
@@ -299,7 +301,7 @@ func (s *SignalingService) SubscribeNatsRoomEvent(
 			room.UserProfileUpdated,
 			room.UserRemoved,
 		}, subject):
-			payload := &room.UserInstanceEventPayload{}
+			payload = &room.UserInstanceEventPayload{}
 			err := json.Unmarshal(m.Data, payload)
 			if err != nil {
 				s.Logger.Error(err)

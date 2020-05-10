@@ -149,6 +149,7 @@ func (s *RoomManagementService) Run() {
 	r1c := make(chan *room.RoomEvent)
 	defer close(r1c)
 	s.RoomManager.SetEvents(r1c)
+	go s.PublishEvent(r1c)
 
 	// keep it running
 	for {

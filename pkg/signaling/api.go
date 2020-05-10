@@ -26,7 +26,7 @@ const (
 func NewAPI(
 	db *gorm.DB,
 	logger *zap.SugaredLogger,
-	ICEServers *[]*ICEServer,
+	ICEServers *[]ICEServer,
 ) *API {
 	return &API{
 		DB:         db,
@@ -66,7 +66,7 @@ var SDPTypeCommandToProto = map[string]protos.SDPTypes{
 type API struct {
 	DB         *gorm.DB
 	Logger     *zap.SugaredLogger
-	ICEServers *[]*ICEServer
+	ICEServers *[]ICEServer
 	Commands   chan *SDPCommand
 	Events     chan *room.RoomEvent
 }
@@ -357,7 +357,7 @@ func (a *API) SubscribeRoomEvent(
 			switch event.Event {
 			case room.UserJoinedRoom:
 				{
-					payload, ok := event.Payload.(room.RoomParticipantEventPayload)
+					payload, ok := event.Payload.(*room.RoomParticipantEventPayload)
 					if !ok {
 						continue
 					}
@@ -376,7 +376,7 @@ func (a *API) SubscribeRoomEvent(
 				}
 			case room.UserLeftRoom:
 				{
-					payload, ok := event.Payload.(room.RoomParticipantEventPayload)
+					payload, ok := event.Payload.(*room.RoomParticipantEventPayload)
 					if !ok {
 						continue
 					}
@@ -395,7 +395,7 @@ func (a *API) SubscribeRoomEvent(
 				}
 			case room.RoomCreated:
 				{
-					payload, ok := event.Payload.(room.RoomInstanceEventPayload)
+					payload, ok := event.Payload.(*room.RoomInstanceEventPayload)
 					if !ok {
 						continue
 					}
@@ -416,7 +416,7 @@ func (a *API) SubscribeRoomEvent(
 				}
 			case room.RoomProfileUpdated:
 				{
-					payload, ok := event.Payload.(room.RoomInstanceEventPayload)
+					payload, ok := event.Payload.(*room.RoomInstanceEventPayload)
 					if !ok {
 						continue
 					}
@@ -437,7 +437,7 @@ func (a *API) SubscribeRoomEvent(
 				}
 			case room.RoomDestroyed:
 				{
-					payload, ok := event.Payload.(room.RoomInstanceEventPayload)
+					payload, ok := event.Payload.(*room.RoomInstanceEventPayload)
 					if !ok {
 						continue
 					}
@@ -458,7 +458,7 @@ func (a *API) SubscribeRoomEvent(
 				}
 			case room.UserProfileUpdated:
 				{
-					payload, ok := event.Payload.(room.UserInstanceEventPayload)
+					payload, ok := event.Payload.(*room.UserInstanceEventPayload)
 					if !ok {
 						continue
 					}
@@ -483,7 +483,7 @@ func (a *API) SubscribeRoomEvent(
 				}
 			case room.UserRemoved:
 				{
-					payload, ok := event.Payload.(room.UserInstanceEventPayload)
+					payload, ok := event.Payload.(*room.UserInstanceEventPayload)
 					if !ok {
 						continue
 					}

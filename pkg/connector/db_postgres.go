@@ -22,7 +22,7 @@ var DefaultPostgresConfig = &PostgresConfig{
 	Password: "postgres",
 	Host:     "localhost",
 	Port:     5432,
-	Database: "console",
+	Database: "signalling",
 }
 
 // ConnectToPostgres will create connection instance to postgre instance

@@ -95,6 +95,22 @@ func (a *API) GetRoomInstancePayload(room *RoomModel) (*RoomInstanceEventPayload
 	}, nil
 }
 
+// GetRoomParticipantPayload return room participant event payload
+func (a *API) GetRoomParticipantPayload(
+	room *RoomModel,
+	userID string,
+) (*RoomParticipantEventPayload, error) {
+	userIDs := []string{}
+	for _, u := range room.Members {
+		userIDs = append(userIDs, u.ID)
+	}
+	return &RoomParticipantEventPayload{
+		RoomID:         room.ID,
+		UserID:         userID,
+		ParticipantIDs: userIDs,
+	}, nil
+}
+
 // RegisterUser will register new user that can participate in a room
 func (a *API) RegisterUser(ctx context.Context, param *protos.NewUserParam) (*protos.User, error) {
 	// check if user presents
@@ -444,13 +460,14 @@ func (a *API) AddUser(ctx context.Context, param *protos.UserRoomParam) (*protos
 		return nil, err
 	}
 	// publish user join room events
+	payload, err := a.GetRoomParticipantPayload(room, param.UserID)
+	if err != nil {
+		return nil, err
+	}
 	a.Events <- &RoomEvent{
-		Time:  time.Now(),
-		Event: UserJoinedRoom,
-		Payload: &RoomParticipantEventPayload{
-			UserID: param.UserID,
-			RoomID: param.RoomID,
-		},
+		Time:    time.Now(),
+		Event:   UserJoinedRoom,
+		Payload: payload,
 	}
 	return RoomModelToProto(room), nil
 }
@@ -483,13 +500,15 @@ func (a *API) KickUser(ctx context.Context, param *protos.UserRoomParam) (*proto
 		return nil, err
 	}
 	// publish user left from room events
+	payload, err := a.GetRoomParticipantPayload(room, param.UserID)
+	if err != nil {
+		return nil, err
+	}
+	payload.ParticipantIDs = append(payload.ParticipantIDs, param.UserID)
 	a.Events <- &RoomEvent{
-		Time:  time.Now(),
-		Event: UserLeftRoom,
-		Payload: &RoomParticipantEventPayload{
-			UserID: param.UserID,
-			RoomID: param.RoomID,
-		},
+		Time:    time.Now(),
+		Event:   UserLeftRoom,
+		Payload: payload,
 	}
 	return RoomModelToProto(room), nil
 }

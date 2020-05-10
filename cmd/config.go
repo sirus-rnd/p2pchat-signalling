@@ -19,18 +19,18 @@ type Config struct {
 	EventNamespace string                    `mapstructure:"event_namespace"`
 	AccessSecret   string                    `mapstructure:"access_secret"`
 	NatsURL        string                    `mapstructure:"nats_url"`
-	ICEServers     *[]*signaling.ICEServer   `mapstructure:"ice_servers"`
+	ICEServers     *[]signaling.ICEServer    `mapstructure:"ice_servers"`
 }
 
 // DefaultConfig is default configuration
 var DefaultConfig = Config{
 	LogLevel:       "info",
 	Postgres:       connector.DefaultPostgresConfig,
-	Port:           9956,
+	Port:           8053,
 	EventNamespace: "qh",
 	NatsURL:        nats.DefaultOptions.Url,
 	AccessSecret:   "access-secret",
-	ICEServers: &[]*signaling.ICEServer{
+	ICEServers: &[]signaling.ICEServer{
 		{URL: "stun.l.google.com:19302"},
 		{URL: "stun.fwdnet.net"},
 		{URL: "stunserver.org"},
@@ -59,7 +59,10 @@ func getEnvKeys(fields []*structs.Field, prefix string) {
 			if len(prefix) > 0 {
 				key = prefix + "." + key
 			}
-			getEnvKeys(structs.Fields(field.Value()), key)
+			value := field.Value()
+			if structs.IsStruct(value) {
+				getEnvKeys(structs.Fields(value), key)
+			}
 		}
 	}
 }

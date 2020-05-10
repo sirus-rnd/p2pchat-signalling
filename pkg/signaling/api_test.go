@@ -18,7 +18,7 @@ var _ = Describe("API", func() {
 	var (
 		db          *gorm.DB
 		logger      *zap.SugaredLogger
-		ICEServers  *[]*signaling.ICEServer
+		ICEServers  *[]signaling.ICEServer
 		SDPCommands chan *signaling.SDPCommand
 		roomEvents  chan *room.RoomEvent
 		api         signaling.API
@@ -41,7 +41,7 @@ var _ = Describe("API", func() {
 		SDPCommands = make(chan *signaling.SDPCommand)
 		// add some public stun server
 		// and private turn server
-		ICEServers = &[]*signaling.ICEServer{
+		ICEServers = &[]signaling.ICEServer{
 			{
 				URL: "stun:stun1.l.google.com:19302",
 			},
@@ -550,7 +550,7 @@ var _ = Describe("API", func() {
 			It("should receive user joined room event", func(done Done) {
 				events := make(chan *room.RoomEvent)
 				myRoomEvents := make(chan *protos.RoomEvent)
-				eventPayload := room.RoomParticipantEventPayload{
+				eventPayload := &room.RoomParticipantEventPayload{
 					RoomID: r1.ID,
 					UserID: u4.ID,
 					ParticipantIDs: []string{
@@ -584,7 +584,7 @@ var _ = Describe("API", func() {
 			It("should not receive user joined room event", func(done Done) {
 				events := make(chan *room.RoomEvent)
 				myRoomEvents := make(chan *protos.RoomEvent)
-				eventPayload := room.RoomParticipantEventPayload{
+				eventPayload := &room.RoomParticipantEventPayload{
 					RoomID: r3.ID,
 					UserID: u7.ID,
 					ParticipantIDs: []string{
@@ -612,7 +612,7 @@ var _ = Describe("API", func() {
 			It("should receive user left room event", func(done Done) {
 				events := make(chan *room.RoomEvent)
 				myRoomEvents := make(chan *protos.RoomEvent)
-				eventPayload := room.RoomParticipantEventPayload{
+				eventPayload := &room.RoomParticipantEventPayload{
 					RoomID: r1.ID,
 					UserID: u2.ID,
 					ParticipantIDs: []string{
@@ -646,7 +646,7 @@ var _ = Describe("API", func() {
 			It("should not receive user left room event", func(done Done) {
 				events := make(chan *room.RoomEvent)
 				myRoomEvents := make(chan *protos.RoomEvent)
-				eventPayload := room.RoomParticipantEventPayload{
+				eventPayload := &room.RoomParticipantEventPayload{
 					RoomID: r3.ID,
 					UserID: u3.ID,
 					ParticipantIDs: []string{
@@ -675,7 +675,7 @@ var _ = Describe("API", func() {
 				events := make(chan *room.RoomEvent)
 				myRoomEvents := make(chan *protos.RoomEvent)
 				r5 := room.FakeRoom()
-				eventPayload := room.RoomInstanceEventPayload{
+				eventPayload := &room.RoomInstanceEventPayload{
 					ID:          r5.ID,
 					Description: r5.Description,
 					Name:        r5.Name,
@@ -716,7 +716,7 @@ var _ = Describe("API", func() {
 				events := make(chan *room.RoomEvent)
 				myRoomEvents := make(chan *protos.RoomEvent)
 				r5 := room.FakeRoom()
-				eventPayload := room.RoomInstanceEventPayload{
+				eventPayload := &room.RoomInstanceEventPayload{
 					ID:          r5.ID,
 					Description: r5.Description,
 					Name:        r5.Name,
@@ -747,7 +747,7 @@ var _ = Describe("API", func() {
 				events := make(chan *room.RoomEvent)
 				myRoomEvents := make(chan *protos.RoomEvent)
 				r5 := room.FakeRoom()
-				eventPayload := room.RoomInstanceEventPayload{
+				eventPayload := &room.RoomInstanceEventPayload{
 					ID:          r5.ID,
 					Description: r5.Description,
 					Name:        r5.Name,
@@ -788,7 +788,7 @@ var _ = Describe("API", func() {
 				events := make(chan *room.RoomEvent)
 				myRoomEvents := make(chan *protos.RoomEvent)
 				r5 := room.FakeRoom()
-				eventPayload := room.RoomInstanceEventPayload{
+				eventPayload := &room.RoomInstanceEventPayload{
 					ID:          r5.ID,
 					Description: r5.Description,
 					Name:        r5.Name,
@@ -819,7 +819,7 @@ var _ = Describe("API", func() {
 				events := make(chan *room.RoomEvent)
 				myRoomEvents := make(chan *protos.RoomEvent)
 				r5 := room.FakeRoom()
-				eventPayload := room.RoomInstanceEventPayload{
+				eventPayload := &room.RoomInstanceEventPayload{
 					ID:          r5.ID,
 					Description: r5.Description,
 					Name:        r5.Name,
@@ -860,7 +860,7 @@ var _ = Describe("API", func() {
 				events := make(chan *room.RoomEvent)
 				myRoomEvents := make(chan *protos.RoomEvent)
 				r5 := room.FakeRoom()
-				eventPayload := room.RoomInstanceEventPayload{
+				eventPayload := &room.RoomInstanceEventPayload{
 					ID:          r5.ID,
 					Description: r5.Description,
 					Name:        r5.Name,
@@ -890,7 +890,7 @@ var _ = Describe("API", func() {
 			It("should receive user profile updated event", func(done Done) {
 				events := make(chan *room.RoomEvent)
 				myRoomEvents := make(chan *protos.RoomEvent)
-				eventPayload := room.UserInstanceEventPayload{
+				eventPayload := &room.UserInstanceEventPayload{
 					ID:    u2.ID,
 					Name:  u2.Name,
 					Photo: u2.Photo,
@@ -927,7 +927,7 @@ var _ = Describe("API", func() {
 			It("should not receive user profile updated event", func(done Done) {
 				events := make(chan *room.RoomEvent)
 				myRoomEvents := make(chan *protos.RoomEvent)
-				eventPayload := room.UserInstanceEventPayload{
+				eventPayload := &room.UserInstanceEventPayload{
 					ID:    u2.ID,
 					Name:  u2.Name,
 					Photo: u2.Photo,
@@ -956,7 +956,7 @@ var _ = Describe("API", func() {
 			It("should receive user removed event", func(done Done) {
 				events := make(chan *room.RoomEvent)
 				myRoomEvents := make(chan *protos.RoomEvent)
-				eventPayload := room.UserInstanceEventPayload{
+				eventPayload := &room.UserInstanceEventPayload{
 					ID:    u2.ID,
 					Name:  u2.Name,
 					Photo: u2.Photo,
@@ -993,7 +993,7 @@ var _ = Describe("API", func() {
 			It("should not receive user removed event", func(done Done) {
 				events := make(chan *room.RoomEvent)
 				myRoomEvents := make(chan *protos.RoomEvent)
-				eventPayload := room.UserInstanceEventPayload{
+				eventPayload := &room.UserInstanceEventPayload{
 					ID:    u2.ID,
 					Name:  u2.Name,
 					Photo: u2.Photo,

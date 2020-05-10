@@ -14,8 +14,8 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "",
-	Short: "Online reservation service",
+	Use:   "signalling",
+	Short: "peer-to-peer chat signalling server",
 	Run: func(cmd *cobra.Command, args []string) {
 		// initiate config
 		var err error

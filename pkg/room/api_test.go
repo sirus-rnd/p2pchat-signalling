@@ -764,6 +764,9 @@ var _ = Describe("API", func() {
 			payload := event.Payload.(*room.RoomParticipantEventPayload)
 			Expect(payload.RoomID).To(Equal(param.RoomID))
 			Expect(payload.UserID).To(Equal(param.UserID))
+			Expect(payload.ParticipantIDs).To(ConsistOf(
+				u1.ID, u2.ID, u6.ID,
+			))
 			close(done)
 		}, 0.3)
 
@@ -863,6 +866,9 @@ var _ = Describe("API", func() {
 			payload := event.Payload.(*room.RoomParticipantEventPayload)
 			Expect(payload.RoomID).To(Equal(param.RoomID))
 			Expect(payload.UserID).To(Equal(param.UserID))
+			Expect(payload.ParticipantIDs).To(ConsistOf(
+				u1.ID, u2.ID,
+			))
 			close(done)
 		}, 0.3)
 
