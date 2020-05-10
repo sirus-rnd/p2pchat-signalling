@@ -96,7 +96,7 @@ func (a *API) GetRoomInstancePayload(room *RoomModel) (*RoomInstanceEventPayload
 }
 
 // RegisterUser will register new user that can participate in a room
-func (a *API) RegisterUser(ctx context.Context, param protos.NewUserParam) (*protos.User, error) {
+func (a *API) RegisterUser(ctx context.Context, param *protos.NewUserParam) (*protos.User, error) {
 	// check if user presents
 	user := &UserModel{}
 	err := a.DB.Where(&UserModel{ID: param.Id}).
@@ -133,7 +133,7 @@ func (a *API) RegisterUser(ctx context.Context, param protos.NewUserParam) (*pro
 }
 
 // GetUser return user information by it's id
-func (a *API) GetUser(ctx context.Context, param protos.GetUserParam) (*protos.User, error) {
+func (a *API) GetUser(ctx context.Context, param *protos.GetUserParam) (*protos.User, error) {
 	user := &UserModel{}
 	err := a.DB.Where(&UserModel{ID: param.Id}).
 		First(user).Error
@@ -147,7 +147,7 @@ func (a *API) GetUser(ctx context.Context, param protos.GetUserParam) (*protos.U
 }
 
 // GetUsers return list of user registered on system
-func (a *API) GetUsers(ctx context.Context, param protos.PaginationParam) (*protos.Users, error) {
+func (a *API) GetUsers(ctx context.Context, param *protos.PaginationParam) (*protos.Users, error) {
 	datas := []UserModel{}
 	count := uint64(0)
 	keyword := strings.ToLower(param.Keyword)
@@ -180,7 +180,7 @@ func (a *API) GetUsers(ctx context.Context, param protos.PaginationParam) (*prot
 }
 
 // GetUserAccessToken will return access token used by peer as an user identification form
-func (a *API) GetUserAccessToken(ctx context.Context, param protos.GetUserParam) (*protos.UserAccessToken, error) {
+func (a *API) GetUserAccessToken(ctx context.Context, param *protos.GetUserParam) (*protos.UserAccessToken, error) {
 	// get user information
 	user := &UserModel{}
 	err := a.DB.Where(&UserModel{ID: param.Id}).
@@ -203,7 +203,7 @@ func (a *API) GetUserAccessToken(ctx context.Context, param protos.GetUserParam)
 }
 
 // UpdateUserProfile will update user profile informations
-func (a *API) UpdateUserProfile(ctx context.Context, param protos.UpdateUserProfileParam) (*protos.User, error) {
+func (a *API) UpdateUserProfile(ctx context.Context, param *protos.UpdateUserProfileParam) (*protos.User, error) {
 	// get user information
 	user := &UserModel{}
 	err := a.DB.Where(&UserModel{ID: param.Id}).
@@ -235,7 +235,7 @@ func (a *API) UpdateUserProfile(ctx context.Context, param protos.UpdateUserProf
 }
 
 // RemoveUser will remove a user from system
-func (a *API) RemoveUser(ctx context.Context, param protos.GetUserParam) (*protos.User, error) {
+func (a *API) RemoveUser(ctx context.Context, param *protos.GetUserParam) (*protos.User, error) {
 	// remove user
 	user := &UserModel{}
 	err := a.DB.Where(&UserModel{ID: param.Id}).
@@ -262,7 +262,7 @@ func (a *API) RemoveUser(ctx context.Context, param protos.GetUserParam) (*proto
 }
 
 // Create will create a new room for user to participate in
-func (a *API) Create(ctx context.Context, param protos.NewRoomParam) (*protos.Room, error) {
+func (a *API) Create(ctx context.Context, param *protos.NewRoomParam) (*protos.Room, error) {
 	// check if user presents
 	room := &RoomModel{}
 	err := a.DB.Where(&RoomModel{ID: param.Id}).
@@ -314,7 +314,7 @@ func (a *API) Create(ctx context.Context, param protos.NewRoomParam) (*protos.Ro
 }
 
 // GetByID will return a room and it's participant by it's id
-func (a *API) GetByID(ctx context.Context, param protos.GetRoomParam) (*protos.Room, error) {
+func (a *API) GetByID(ctx context.Context, param *protos.GetRoomParam) (*protos.Room, error) {
 	// get room detail
 	room := &RoomModel{}
 	err := a.DB.Preload("Members").
@@ -330,7 +330,7 @@ func (a *API) GetByID(ctx context.Context, param protos.GetRoomParam) (*protos.R
 }
 
 // GetAll will return all room registered on system
-func (a *API) GetAll(ctx context.Context, param protos.PaginationParam) (*protos.Rooms, error) {
+func (a *API) GetAll(ctx context.Context, param *protos.PaginationParam) (*protos.Rooms, error) {
 	datas := []RoomModel{}
 	count := uint64(0)
 	keyword := strings.ToLower(param.Keyword)
@@ -364,7 +364,7 @@ func (a *API) GetAll(ctx context.Context, param protos.PaginationParam) (*protos
 }
 
 // UpdateProfile will update room profile like description and photo
-func (a *API) UpdateProfile(ctx context.Context, param protos.UpdateRoomProfileParam) (*protos.Room, error) {
+func (a *API) UpdateProfile(ctx context.Context, param *protos.UpdateRoomProfileParam) (*protos.Room, error) {
 	// get room detail
 	room := &RoomModel{}
 	err := a.DB.Preload("Members").
@@ -398,7 +398,7 @@ func (a *API) UpdateProfile(ctx context.Context, param protos.UpdateRoomProfileP
 }
 
 // AddUser to a room
-func (a *API) AddUser(ctx context.Context, param protos.UserRoomParam) (*protos.Room, error) {
+func (a *API) AddUser(ctx context.Context, param *protos.UserRoomParam) (*protos.Room, error) {
 	// get room detail
 	room := &RoomModel{}
 	err := a.DB.
@@ -456,7 +456,7 @@ func (a *API) AddUser(ctx context.Context, param protos.UserRoomParam) (*protos.
 }
 
 // KickUser from a room
-func (a *API) KickUser(ctx context.Context, param protos.UserRoomParam) (*protos.Room, error) {
+func (a *API) KickUser(ctx context.Context, param *protos.UserRoomParam) (*protos.Room, error) {
 	// get room detail
 	room := &RoomModel{}
 	err := a.DB.
@@ -495,7 +495,7 @@ func (a *API) KickUser(ctx context.Context, param protos.UserRoomParam) (*protos
 }
 
 // Destroy a room
-func (a *API) Destroy(ctx context.Context, param protos.GetRoomParam) (*protos.Room, error) {
+func (a *API) Destroy(ctx context.Context, param *protos.GetRoomParam) (*protos.Room, error) {
 	// get detail information of room before delete it
 	room := &RoomModel{}
 	err := a.DB.

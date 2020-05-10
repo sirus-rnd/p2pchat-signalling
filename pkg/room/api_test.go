@@ -152,7 +152,7 @@ var _ = Describe("API", func() {
 
 	Describe("RegisterUser", func() {
 		It("should register new user to system", func() {
-			param := protos.NewUserParam{
+			param := &protos.NewUserParam{
 				Id:    faker.RandomString(5),
 				Name:  faker.Name().Name(),
 				Photo: faker.Avatar().String(),
@@ -164,7 +164,7 @@ var _ = Describe("API", func() {
 			Expect(res.Id).To(Equal(param.Id))
 			Expect(res.Name).To(Equal(param.Name))
 			Expect(res.Photo).To(Equal(param.Photo))
-			res, err = api.GetUser(ctx, protos.GetUserParam{
+			res, err = api.GetUser(ctx, &protos.GetUserParam{
 				Id: param.Id,
 			})
 			Expect(err).To(BeNil())
@@ -174,7 +174,7 @@ var _ = Describe("API", func() {
 		})
 
 		It("should publish user registered event", func(done Done) {
-			param := protos.NewUserParam{
+			param := &protos.NewUserParam{
 				Id:    faker.RandomString(5),
 				Name:  faker.Name().Name(),
 				Photo: faker.Avatar().String(),
@@ -195,7 +195,7 @@ var _ = Describe("API", func() {
 
 		When("user already registered", func() {
 			It("should return user already exist error", func() {
-				param := protos.NewUserParam{
+				param := &protos.NewUserParam{
 					Id:    u1.ID,
 					Name:  faker.Name().Name(),
 					Photo: faker.Avatar().String(),
@@ -211,7 +211,7 @@ var _ = Describe("API", func() {
 	Describe("GetUser", func() {
 		It("should return user by it's id", func() {
 			ctx := context.Background()
-			res, err := api.GetUser(ctx, protos.GetUserParam{
+			res, err := api.GetUser(ctx, &protos.GetUserParam{
 				Id: u1.ID,
 			})
 			Expect(err).To(BeNil())
@@ -223,7 +223,7 @@ var _ = Describe("API", func() {
 		When("user not exist", func() {
 			It("should return user not found error", func() {
 				ctx := context.Background()
-				res, err := api.GetUser(ctx, protos.GetUserParam{
+				res, err := api.GetUser(ctx, &protos.GetUserParam{
 					Id: "non-exist-id",
 				})
 				Expect(res).To(BeNil())
@@ -235,7 +235,7 @@ var _ = Describe("API", func() {
 	Describe("GetUsers", func() {
 		It("should return list of user", func() {
 			ctx := context.Background()
-			res, err := api.GetUsers(ctx, protos.PaginationParam{
+			res, err := api.GetUsers(ctx, &protos.PaginationParam{
 				Limit: 10, Offset: 0, Keyword: "",
 			})
 			Expect(err).To(BeNil())
@@ -268,7 +268,7 @@ var _ = Describe("API", func() {
 			db.Save(u5)
 			db.Save(u6)
 			db.Save(u7)
-			res, err := api.GetUsers(ctx, protos.PaginationParam{
+			res, err := api.GetUsers(ctx, &protos.PaginationParam{
 				Limit: 10, Offset: 0, Keyword: "an",
 			})
 			Expect(err).To(BeNil())
@@ -297,7 +297,7 @@ var _ = Describe("API", func() {
 			db.Save(u5)
 			db.Save(u6)
 			db.Save(u7)
-			res, err := api.GetUsers(ctx, protos.PaginationParam{
+			res, err := api.GetUsers(ctx, &protos.PaginationParam{
 				Limit: 3, Offset: 2, Keyword: "a",
 			})
 			Expect(err).To(BeNil())
@@ -314,7 +314,7 @@ var _ = Describe("API", func() {
 	Describe("GetUserAccessToken", func() {
 		It("should return user access token", func() {
 			ctx := context.Background()
-			res, err := api.GetUserAccessToken(ctx, protos.GetUserParam{
+			res, err := api.GetUserAccessToken(ctx, &protos.GetUserParam{
 				Id: u1.ID,
 			})
 			Expect(err).To(BeNil())
@@ -326,7 +326,7 @@ var _ = Describe("API", func() {
 		When("user not exist", func() {
 			It("should return user not found error", func() {
 				ctx := context.Background()
-				res, err := api.GetUserAccessToken(ctx, protos.GetUserParam{
+				res, err := api.GetUserAccessToken(ctx, &protos.GetUserParam{
 					Id: "non-exist-id",
 				})
 				Expect(res).To(BeNil())
@@ -338,7 +338,7 @@ var _ = Describe("API", func() {
 	Describe("UpdateUserProfile", func() {
 		It("should update user's profile information", func() {
 			ctx := context.Background()
-			param := protos.UpdateUserProfileParam{
+			param := &protos.UpdateUserProfileParam{
 				Id:    u1.ID,
 				Name:  faker.Name().Name(),
 				Photo: faker.Avatar().String(),
@@ -353,7 +353,7 @@ var _ = Describe("API", func() {
 
 		It("should publish user profile updated event", func(done Done) {
 			ctx := context.Background()
-			param := protos.UpdateUserProfileParam{
+			param := &protos.UpdateUserProfileParam{
 				Id:    u1.ID,
 				Name:  faker.Name().Name(),
 				Photo: faker.Avatar().String(),
@@ -376,7 +376,7 @@ var _ = Describe("API", func() {
 		When("user not exist", func() {
 			It("should return user not found error", func() {
 				ctx := context.Background()
-				res, err := api.UpdateUserProfile(ctx, protos.UpdateUserProfileParam{
+				res, err := api.UpdateUserProfile(ctx, &protos.UpdateUserProfileParam{
 					Id:    "non-exist-id",
 					Name:  faker.Name().Name(),
 					Photo: faker.Avatar().String(),
@@ -390,7 +390,7 @@ var _ = Describe("API", func() {
 	Describe("RemoveUser", func() {
 		It("should remove user from system", func() {
 			ctx := context.Background()
-			param := protos.GetUserParam{
+			param := &protos.GetUserParam{
 				Id: u1.ID,
 			}
 			go func() { <-roomEvents }()
@@ -403,7 +403,7 @@ var _ = Describe("API", func() {
 
 		It("should publish user removed event", func(done Done) {
 			ctx := context.Background()
-			param := protos.GetUserParam{
+			param := &protos.GetUserParam{
 				Id: u1.ID,
 			}
 			go func() {
@@ -424,7 +424,7 @@ var _ = Describe("API", func() {
 		When("user not exist", func() {
 			It("should return user not found error", func() {
 				ctx := context.Background()
-				param := protos.GetUserParam{
+				param := &protos.GetUserParam{
 					Id: "non-exist-id",
 				}
 				res, err := api.RemoveUser(ctx, param)
@@ -437,7 +437,7 @@ var _ = Describe("API", func() {
 	Describe("Create", func() {
 		It("should add new room to system", func() {
 			ctx := context.Background()
-			param := protos.NewRoomParam{
+			param := &protos.NewRoomParam{
 				Id:          faker.RandomString(5),
 				Name:        faker.Commerce().ProductName(),
 				Photo:       faker.Avatar().String(),
@@ -462,7 +462,7 @@ var _ = Describe("API", func() {
 
 		It("should publish room created event", func(done Done) {
 			ctx := context.Background()
-			param := protos.NewRoomParam{
+			param := &protos.NewRoomParam{
 				Id:          faker.RandomString(5),
 				Name:        faker.Commerce().ProductName(),
 				Photo:       faker.Avatar().String(),
@@ -490,7 +490,7 @@ var _ = Describe("API", func() {
 		When("room already created", func() {
 			It("should return room already exist error", func() {
 				ctx := context.Background()
-				param := protos.NewRoomParam{
+				param := &protos.NewRoomParam{
 					Id:          r1.ID,
 					Name:        faker.Commerce().ProductName(),
 					Photo:       faker.Avatar().String(),
@@ -508,7 +508,7 @@ var _ = Describe("API", func() {
 		When("user not exist", func() {
 			It("should omit from member list", func() {
 				ctx := context.Background()
-				param := protos.NewRoomParam{
+				param := &protos.NewRoomParam{
 					Id:          faker.RandomString(5),
 					Name:        faker.Commerce().ProductName(),
 					Photo:       faker.Avatar().String(),
@@ -534,7 +534,7 @@ var _ = Describe("API", func() {
 	Describe("GetByID", func() {
 		It("should return room by it's id", func() {
 			ctx := context.Background()
-			param := protos.GetRoomParam{
+			param := &protos.GetRoomParam{
 				Id: r1.ID,
 			}
 			res, err := api.GetByID(ctx, param)
@@ -552,7 +552,7 @@ var _ = Describe("API", func() {
 		When("room not exist", func() {
 			It("should return room not found error", func() {
 				ctx := context.Background()
-				param := protos.GetRoomParam{
+				param := &protos.GetRoomParam{
 					Id: "not-exist-room",
 				}
 				res, err := api.GetByID(ctx, param)
@@ -565,7 +565,7 @@ var _ = Describe("API", func() {
 	Describe("GetAll", func() {
 		It("should return list of room ordered by it's id", func() {
 			ctx := context.Background()
-			res, err := api.GetAll(ctx, protos.PaginationParam{
+			res, err := api.GetAll(ctx, &protos.PaginationParam{
 				Limit: 10, Offset: 0, Keyword: "",
 			})
 			Expect(err).To(BeNil())
@@ -621,7 +621,7 @@ var _ = Describe("API", func() {
 			db.Save(r2)
 			db.Save(r3)
 			db.Save(r4)
-			res, err := api.GetAll(ctx, protos.PaginationParam{
+			res, err := api.GetAll(ctx, &protos.PaginationParam{
 				Limit: 10, Offset: 0, Keyword: "club",
 			})
 			Expect(err).To(BeNil())
@@ -641,7 +641,7 @@ var _ = Describe("API", func() {
 			db.Save(r2)
 			db.Save(r3)
 			db.Save(r4)
-			res, err := api.GetAll(ctx, protos.PaginationParam{
+			res, err := api.GetAll(ctx, &protos.PaginationParam{
 				Limit: 2, Offset: 1, Keyword: "a",
 			})
 			Expect(err).To(BeNil())
@@ -655,7 +655,7 @@ var _ = Describe("API", func() {
 	Describe("UpdateProfile", func() {
 		It("should update room's profile information", func() {
 			ctx := context.Background()
-			param := protos.UpdateRoomProfileParam{
+			param := &protos.UpdateRoomProfileParam{
 				Id:          r1.ID,
 				Name:        faker.Commerce().ProductName(),
 				Photo:       faker.Avatar().String(),
@@ -676,7 +676,7 @@ var _ = Describe("API", func() {
 
 		It("should publish room profile updated event", func(done Done) {
 			ctx := context.Background()
-			param := protos.UpdateRoomProfileParam{
+			param := &protos.UpdateRoomProfileParam{
 				Id:          r1.ID,
 				Name:        faker.Commerce().ProductName(),
 				Photo:       faker.Avatar().String(),
@@ -701,7 +701,7 @@ var _ = Describe("API", func() {
 		When("room not exist", func() {
 			It("should return room not found error", func() {
 				ctx := context.Background()
-				param := protos.UpdateRoomProfileParam{
+				param := &protos.UpdateRoomProfileParam{
 					Id:          "not-exist-room",
 					Name:        faker.Commerce().ProductName(),
 					Photo:       faker.Avatar().String(),
@@ -717,7 +717,7 @@ var _ = Describe("API", func() {
 	Describe("AddUser", func() {
 		It("should add user to room", func() {
 			ctx := context.Background()
-			param := protos.UserRoomParam{
+			param := &protos.UserRoomParam{
 				RoomID: r1.ID,
 				UserID: u6.ID,
 			}
@@ -737,7 +737,7 @@ var _ = Describe("API", func() {
 
 		It("should not register member as new user", func() {
 			ctx := context.Background()
-			param := protos.UserRoomParam{
+			param := &protos.UserRoomParam{
 				RoomID: r1.ID,
 				UserID: u6.ID,
 			}
@@ -752,7 +752,7 @@ var _ = Describe("API", func() {
 
 		It("should publish user joined room event", func(done Done) {
 			ctx := context.Background()
-			param := protos.UserRoomParam{
+			param := &protos.UserRoomParam{
 				RoomID: r1.ID,
 				UserID: u6.ID,
 			}
@@ -770,7 +770,7 @@ var _ = Describe("API", func() {
 		When("user already added to room", func() {
 			It("should not add user to room", func() {
 				ctx := context.Background()
-				param := protos.UserRoomParam{
+				param := &protos.UserRoomParam{
 					RoomID: r1.ID,
 					UserID: u2.ID,
 				}
@@ -791,7 +791,7 @@ var _ = Describe("API", func() {
 		When("room not exist", func() {
 			It("should return room not found error", func() {
 				ctx := context.Background()
-				param := protos.UserRoomParam{
+				param := &protos.UserRoomParam{
 					RoomID: "not-exist-room",
 					UserID: u2.ID,
 				}
@@ -804,7 +804,7 @@ var _ = Describe("API", func() {
 		When("user not exist", func() {
 			It("should return user not found error", func() {
 				ctx := context.Background()
-				param := protos.UserRoomParam{
+				param := &protos.UserRoomParam{
 					RoomID: r1.ID,
 					UserID: "not-exist-user",
 				}
@@ -818,7 +818,7 @@ var _ = Describe("API", func() {
 	Describe("KickUser", func() {
 		It("should remove user from a room", func() {
 			ctx := context.Background()
-			param := protos.UserRoomParam{
+			param := &protos.UserRoomParam{
 				RoomID: r1.ID,
 				UserID: u2.ID,
 			}
@@ -836,7 +836,7 @@ var _ = Describe("API", func() {
 
 		It("should not remove member's user record", func() {
 			ctx := context.Background()
-			param := protos.UserRoomParam{
+			param := &protos.UserRoomParam{
 				RoomID: r1.ID,
 				UserID: u2.ID,
 			}
@@ -851,7 +851,7 @@ var _ = Describe("API", func() {
 
 		It("should publish user left room event", func(done Done) {
 			ctx := context.Background()
-			param := protos.UserRoomParam{
+			param := &protos.UserRoomParam{
 				RoomID: r1.ID,
 				UserID: u2.ID,
 			}
@@ -869,7 +869,7 @@ var _ = Describe("API", func() {
 		When("user not member of this room", func() {
 			It("should not kick this user", func() {
 				ctx := context.Background()
-				param := protos.UserRoomParam{
+				param := &protos.UserRoomParam{
 					RoomID: r1.ID,
 					UserID: u3.ID,
 				}
@@ -890,7 +890,7 @@ var _ = Describe("API", func() {
 		When("room not exist", func() {
 			It("should return room not found error", func() {
 				ctx := context.Background()
-				param := protos.UserRoomParam{
+				param := &protos.UserRoomParam{
 					RoomID: "not-exist-room",
 					UserID: u3.ID,
 				}
@@ -904,7 +904,7 @@ var _ = Describe("API", func() {
 	Describe("Destroy", func() {
 		It("should remove room from system", func() {
 			ctx := context.Background()
-			param := protos.GetRoomParam{
+			param := &protos.GetRoomParam{
 				Id: r1.ID,
 			}
 			go func() { <-roomEvents }()
@@ -925,7 +925,7 @@ var _ = Describe("API", func() {
 
 		It("should publish room removed event", func(done Done) {
 			ctx := context.Background()
-			param := protos.GetRoomParam{
+			param := &protos.GetRoomParam{
 				Id: r1.ID,
 			}
 			go func() {
@@ -947,7 +947,7 @@ var _ = Describe("API", func() {
 		When("room not exist", func() {
 			It("should return room not found error", func() {
 				ctx := context.Background()
-				param := protos.GetRoomParam{
+				param := &protos.GetRoomParam{
 					Id: "not-exist-room",
 				}
 				res, err := api.Destroy(ctx, param)

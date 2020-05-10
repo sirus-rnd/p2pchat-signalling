@@ -13,8 +13,8 @@ service RoomManagementService {
   rpc UpdateUserProfile(UpdateUserProfileParam) returns (User) {}
   rpc RemoveUser(GetUserParam) returns (User) {}
   rpc CreateRoom(NewRoomParam) returns (Room) {}
-  rpc GetRoom(GetRoomParam) returns (Rooms) {}
-  rpc GetRooms(PaginationParam) returns (Room) {}
+  rpc GetRoom(GetRoomParam) returns (Room) {}
+  rpc GetRooms(PaginationParam) returns (Rooms) {}
   rpc UpdateRoomProfile(UpdateRoomProfileParam) returns (Room) {}
   rpc AddUserToRoom(UserRoomParam) returns (Room) {}
   rpc KickUserFromRoom(UserRoomParam) returns (Room) {}
