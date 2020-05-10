@@ -140,7 +140,7 @@ func (a *API) GetMyProfile(user *room.UserModel) *protos.Profile {
 }
 
 // UpdateProfile will update user profile information like photo, name etc.
-func (a *API) UpdateProfile(ctx context.Context, param protos.UpdateProfileParam) (*protos.Profile, error) {
+func (a *API) UpdateProfile(ctx context.Context, param *protos.UpdateProfileParam) (*protos.Profile, error) {
 	user, err := a.GetUserContext(ctx)
 	if err != nil {
 		return nil, err
@@ -220,7 +220,7 @@ func (a *API) MyRooms(ctx context.Context) (*protos.Rooms, error) {
 }
 
 // MyRoomInfo will return detailed information about a room peer participates in
-func (a *API) MyRoomInfo(ctx context.Context, param protos.GetRoomParam) (*protos.Room, error) {
+func (a *API) MyRoomInfo(ctx context.Context, param *protos.GetRoomParam) (*protos.Room, error) {
 	user, err := a.GetUserContext(ctx)
 	if err != nil {
 		return nil, err
@@ -252,7 +252,7 @@ func (a *API) MyRoomInfo(ctx context.Context, param protos.GetRoomParam) (*proto
 }
 
 // OfferSDP will send session description offer from a peer to target peers
-func (a *API) OfferSDP(ctx context.Context, param protos.SDPParam) error {
+func (a *API) OfferSDP(ctx context.Context, param *protos.SDPParam) error {
 	user, err := a.GetUserContext(ctx)
 	if err != nil {
 		return err
@@ -267,7 +267,7 @@ func (a *API) OfferSDP(ctx context.Context, param protos.SDPParam) error {
 }
 
 // AnswerSDP will answer SDP offer from a peer
-func (a *API) AnswerSDP(ctx context.Context, param protos.SDPParam) error {
+func (a *API) AnswerSDP(ctx context.Context, param *protos.SDPParam) error {
 	user, err := a.GetUserContext(ctx)
 	if err != nil {
 		return err

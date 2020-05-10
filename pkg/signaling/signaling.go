@@ -9,7 +9,7 @@ import (
 
 const (
 	// SDPOferrCommand emitted when peer send sdp offer command to another peer
-	SDPOferrCommand = "chat.sdp.oferr"
+	SDPOferrCommand = "chat.sdp.offer"
 	// SDPAnswerCommand emitted when peer send sdp answer command to another peer oferring
 	SDPAnswerCommand = "chat.sdp.answer"
 )
@@ -29,18 +29,19 @@ type SDPCommand struct {
 	Description string `json:"description"`
 }
 
-// ISignalingService is service related to signaling from peer to peer
-type ISignalingService interface {
+// ISignaling act as intermediary to give signal from peer to other peer
+// so they be able communicate to each other within same channel / rooms
+type ISignaling interface {
 	GetCommands() chan *SDPCommand
 	SetCommands(commands chan *SDPCommand)
 	GetRoomEvents() chan *room.RoomEvent
 	SetRoomEvents(chan *room.RoomEvent)
 	MyProfile(ctx context.Context) (*protos.Profile, error)
-	UpdateProfile(ctx context.Context, param protos.UpdateProfileParam) (*protos.Profile, error)
+	UpdateProfile(ctx context.Context, param *protos.UpdateProfileParam) (*protos.Profile, error)
 	MyRooms(ctx context.Context) (*protos.Rooms, error)
-	MyRoomInfo(ctx context.Context, param protos.GetRoomParam) (*protos.Room, error)
-	OfferSDP(ctx context.Context, param protos.SDPParam) error
-	AnswerSDP(ctx context.Context, param protos.SDPParam) error
+	MyRoomInfo(ctx context.Context, param *protos.GetRoomParam) (*protos.Room, error)
+	OfferSDP(ctx context.Context, param *protos.SDPParam) error
+	AnswerSDP(ctx context.Context, param *protos.SDPParam) error
 	SubscribeSDPCommand(
 		ctx context.Context,
 		commands <-chan *SDPCommand,

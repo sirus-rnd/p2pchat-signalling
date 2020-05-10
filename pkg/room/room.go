@@ -19,11 +19,11 @@ const (
 	// RoomDestroyed emitted when room has been destroyed
 	RoomDestroyed = "chat.room.destroyed"
 	// UserRegistered emitted when new user registered
-	UserRegistered = "chat.user.registered"
+	UserRegistered = "chat.room.user-registered"
 	// UserProfileUpdated emitted when user profile updated
-	UserProfileUpdated = "chat.user.profile-updated"
+	UserProfileUpdated = "chat.room.user-profile-updated"
 	// UserRemoved emitted when user removed from system
-	UserRemoved = "chat.user.removed"
+	UserRemoved = "chat.room.user-removed"
 )
 
 // RoomEvent contain data emitted by events channel

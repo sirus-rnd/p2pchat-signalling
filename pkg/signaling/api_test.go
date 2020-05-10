@@ -220,7 +220,7 @@ var _ = Describe("API", func() {
 	Describe("UpdateProfile", func() {
 		It("should update user profile information", func() {
 			ctx := context.WithValue(context.Background(), room.UserIDKey, u1.ID)
-			param := protos.UpdateProfileParam{
+			param := &protos.UpdateProfileParam{
 				Name:  faker.Name().Name(),
 				Photo: faker.Avatar().String(),
 			}
@@ -253,7 +253,7 @@ var _ = Describe("API", func() {
 
 		It("should return updated user profile information", func() {
 			ctx := context.WithValue(context.Background(), room.UserIDKey, u1.ID)
-			param := protos.UpdateProfileParam{
+			param := &protos.UpdateProfileParam{
 				Name:  faker.Name().Name(),
 				Photo: faker.Avatar().String(),
 			}
@@ -284,7 +284,7 @@ var _ = Describe("API", func() {
 		})
 
 		It("should publish update profile event", func() {
-			param := protos.UpdateProfileParam{
+			param := &protos.UpdateProfileParam{
 				Name:  faker.Name().Name(),
 				Photo: faker.Avatar().String(),
 			}
@@ -347,7 +347,7 @@ var _ = Describe("API", func() {
 	Describe("MyRoomInfo", func() {
 		It("should return room with list of member", func() {
 			ctx := context.WithValue(context.Background(), room.UserIDKey, u1.ID)
-			res, err := api.MyRoomInfo(ctx, protos.GetRoomParam{
+			res, err := api.MyRoomInfo(ctx, &protos.GetRoomParam{
 				Id: r1.ID,
 			})
 			Expect(err).To(BeNil())
@@ -365,7 +365,7 @@ var _ = Describe("API", func() {
 		When("user not join this room", func() {
 			It("should return room not found error", func() {
 				ctx := context.WithValue(context.Background(), room.UserIDKey, u1.ID)
-				res, err := api.MyRoomInfo(ctx, protos.GetRoomParam{
+				res, err := api.MyRoomInfo(ctx, &protos.GetRoomParam{
 					Id: r3.ID,
 				})
 				Expect(res).To(BeNil())
@@ -376,7 +376,7 @@ var _ = Describe("API", func() {
 		When("room not exist", func() {
 			It("should return room not found error", func() {
 				ctx := context.WithValue(context.Background(), room.UserIDKey, u1.ID)
-				res, err := api.MyRoomInfo(ctx, protos.GetRoomParam{
+				res, err := api.MyRoomInfo(ctx, &protos.GetRoomParam{
 					Id: "not-exist-room",
 				})
 				Expect(res).To(BeNil())
@@ -388,7 +388,7 @@ var _ = Describe("API", func() {
 	Describe("OfferSDP", func() {
 		It("should publish SDP offer command from user", func() {
 			ctx := context.WithValue(context.Background(), room.UserIDKey, u1.ID)
-			param := protos.SDPParam{
+			param := &protos.SDPParam{
 				Description: faker.Lorem().Paragraph(3),
 				UserID:      u2.ID,
 			}
@@ -407,7 +407,7 @@ var _ = Describe("API", func() {
 	Describe("AnswerSDP", func() {
 		It("should publish SDP answer command from user", func() {
 			ctx := context.WithValue(context.Background(), room.UserIDKey, u2.ID)
-			param := protos.SDPParam{
+			param := &protos.SDPParam{
 				Description: faker.Lorem().Paragraph(3),
 				UserID:      u1.ID,
 			}
