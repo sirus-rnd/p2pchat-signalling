@@ -219,6 +219,57 @@ func (s *SignalingService) SubscribeRoomEvent(
 	return errc
 }
 
+// SendICECandidate will send ICE candidate to a user
+func (s *SignalingService) SendICECandidate(
+	ctx context.Context,
+	req *protos.ICEParam,
+) (*empty.Empty, error) {
+	ctx, err := s.SetUserContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	err = s.Signaling.SendICECandidate(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return &empty.Empty{}, nil
+}
+
+// SubscribeICECandidate will subscribe ICE candidate offers to a user
+func (s *SignalingService) SubscribeICECandidate(
+	req *empty.Empty,
+	srv protos.SignalingService_SubscribeICECandidateServer,
+) error {
+	ctx := srv.Context()
+	ctx, err := s.SetUserContext(ctx)
+	if err != nil {
+		return err
+	}
+	offers := make(chan *signaling.ICEOffer)
+	protoOffers := make(chan *protos.ICEOffer)
+	var errc error
+	sub, err := s.SubscribeNatsICEOffer(offers, nil)
+	if err != nil {
+		return err
+	}
+	defer sub.Unsubscribe()
+	go func() {
+		err := s.Signaling.SubscribeICECandidate(ctx, offers, protoOffers)
+		if err != nil {
+			errc = err
+		}
+		close(offers)
+		close(protoOffers)
+	}()
+	for offer := range protoOffers {
+		err := srv.Send(offer)
+		if err != nil {
+			return err
+		}
+	}
+	return errc
+}
+
 // Run signaling service
 // this should be called before serve service to network
 // - wire room event and SDP command to NATS message bus
@@ -226,12 +277,16 @@ func (s *SignalingService) Run() {
 	// wired nats to publish channel
 	r1c := make(chan *room.RoomEvent)
 	s1c := make(chan *signaling.SDPCommand)
+	ioc := make(chan *signaling.ICEOffer)
 	defer close(r1c)
 	defer close(s1c)
+	defer close(ioc)
 	s.Signaling.SetRoomEvents(r1c)
 	s.Signaling.SetCommands(s1c)
+	s.Signaling.SetICEOffers(ioc)
 	go s.PublishRoomEvent(r1c)
 	go s.PublishSDPCommand(s1c)
+	go s.PublishICEOffer(ioc)
 
 	// keep it running
 	for {
@@ -383,4 +438,43 @@ func (s *SignalingService) SubscribeNatsSDPCommand(
 		return s.Nats.QueueSubscribe(s.EventNamespace+".chat.sdp.*", *queue, handler)
 	}
 	return s.Nats.Subscribe(s.EventNamespace+".chat.sdp.*", handler)
+}
+
+// PublishICEOffer will publish ICE candidate offer to NATS
+func (s *SignalingService) PublishICEOffer(
+	offers chan *signaling.ICEOffer,
+) error {
+	for offer := range offers {
+		if offer == nil {
+			continue
+		}
+		subject := s.EventNamespace + "." + signaling.ICECandidateOffer
+		err := s.Nats.Publish(subject, offer)
+		if err != nil {
+			s.Logger.Error(err)
+			continue
+		}
+	}
+	return nil
+}
+
+// SubscribeNatsICEOffer will subscribe native nats message
+// parsed the payload and passed it to ICE Offer channel
+func (s *SignalingService) SubscribeNatsICEOffer(
+	offers chan<- *signaling.ICEOffer,
+	queue *string,
+) (*nats.Subscription, error) {
+	handler := func(m *nats.Msg) {
+		offer := &signaling.ICEOffer{}
+		err := json.Unmarshal(m.Data, offer)
+		if err != nil {
+			s.Logger.Error(err)
+			return
+		}
+		offers <- offer
+	}
+	if queue != nil {
+		return s.Nats.QueueSubscribe(s.EventNamespace+"."+signaling.ICECandidateOffer, *queue, handler)
+	}
+	return s.Nats.Subscribe(s.EventNamespace+"."+signaling.ICECandidateOffer, handler)
 }

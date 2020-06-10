@@ -30,6 +30,8 @@ service SignalingService {
   rpc AnswerSessionDescription(SDPParam) returns (google.protobuf.Empty) {}
   rpc SubscribeSDPCommand(google.protobuf.Empty) returns (stream SDP) {}
   rpc SubscribeRoomEvent(google.protobuf.Empty) returns (stream RoomEvent) {}
+  rpc SendICECandidate(ICEParam) returns (google.protobuf.Empty) {}
+  rpc SubscribeICECandidate(google.protobuf.Empty) returns (stream ICEOffer) {}
 }
 
 message NewUserParam {
@@ -188,4 +190,30 @@ message UserInstanceEventPayload {
   string id = 1;
   string name = 2;
   string photo = 3;
+}
+
+message ICEParam {
+  ICECandidate candidate = 1;
+  string userID = 2;
+}
+
+message ICEOffer {
+  ICECandidate candidate = 1;
+  string senderID = 2;
+}
+
+message ICECandidate {
+  string candidate = 1;
+  string component = 2;
+  string foundation = 3;
+  int32 port = 4;
+  int32 priority = 5;
+  string protocol = 6;
+  string relatedAddress = 7;
+  int32 relatedPort = 8;
+  int32 sdpMLineIndex = 9;
+  string sdpMid = 10;
+  string tcpType = 11;
+  string type = 12;
+  string usernameFragment = 13;
 }

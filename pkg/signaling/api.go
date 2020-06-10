@@ -70,6 +70,7 @@ type API struct {
 	ICEServers *[]ICEServer
 	Commands   chan *SDPCommand
 	Events     chan *room.RoomEvent
+	ICEs       chan *ICEOffer
 }
 
 // GetCommands return SDP command channel
@@ -90,6 +91,16 @@ func (a *API) GetRoomEvents() chan *room.RoomEvent {
 // SetRoomEvents will set channel use to publish room events
 func (a *API) SetRoomEvents(events chan *room.RoomEvent) {
 	a.Events = events
+}
+
+// GetICEOffers will return channel use to publish ICE candidate offers
+func (a *API) GetICEOffers() chan *ICEOffer {
+	return a.ICEs
+}
+
+// SetICEOffers will set channel use to publish ICE candidate offers
+func (a *API) SetICEOffers(offers chan *ICEOffer) {
+	a.ICEs = offers
 }
 
 // GetUserContext will return user context for an invocation
@@ -519,6 +530,80 @@ func (a *API) SubscribeRoomEvent(
 			}
 			roomEvent.Time = timestamp
 			protoEvents <- roomEvent
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+// SendICECandidate will send ICE candidate offer to target user
+func (a *API) SendICECandidate(
+	ctx context.Context,
+	param *protos.ICEParam,
+) error {
+	user, err := a.GetUserContext(ctx)
+	if err != nil {
+		return err
+	}
+	a.ICEs <- &ICEOffer{
+		To:   param.UserID,
+		From: user.ID,
+		Candidate: &ICECandidate{
+			Candidate:        param.Candidate.Candidate,
+			Component:        param.Candidate.Component,
+			Foundation:       param.Candidate.Foundation,
+			Port:             param.Candidate.Port,
+			Priority:         param.Candidate.Priority,
+			Protocol:         param.Candidate.Protocol,
+			RelatedAddress:   param.Candidate.RelatedAddress,
+			RelatedPort:      param.Candidate.RelatedPort,
+			SDPMLineIndex:    param.Candidate.SdpMLineIndex,
+			SDPMid:           param.Candidate.SdpMid,
+			TCPType:          param.Candidate.TcpType,
+			Type:             param.Candidate.Type,
+			UsernameFragment: param.Candidate.UsernameFragment,
+		},
+	}
+	return nil
+}
+
+// SubscribeICECandidate will return all ICE candidate offer to this user
+func (a *API) SubscribeICECandidate(
+	ctx context.Context,
+	offers <-chan *ICEOffer,
+	protoOffers chan<- *protos.ICEOffer,
+) error {
+	user, err := a.GetUserContext(ctx)
+	if err != nil {
+		return err
+	}
+	for {
+		select {
+		case offer := <-offers:
+			if offer == nil {
+				continue
+			}
+			if offer.To != user.ID {
+				continue
+			}
+			protoOffers <- &protos.ICEOffer{
+				SenderID: offer.From,
+				Candidate: &protos.ICECandidate{
+					Candidate:        offer.Candidate.Candidate,
+					Component:        offer.Candidate.Component,
+					Foundation:       offer.Candidate.Foundation,
+					Port:             offer.Candidate.Port,
+					Priority:         offer.Candidate.Priority,
+					Protocol:         offer.Candidate.Protocol,
+					RelatedAddress:   offer.Candidate.RelatedAddress,
+					RelatedPort:      offer.Candidate.RelatedPort,
+					SdpMLineIndex:    offer.Candidate.SDPMLineIndex,
+					SdpMid:           offer.Candidate.SDPMid,
+					TcpType:          offer.Candidate.TCPType,
+					Type:             offer.Candidate.Type,
+					UsernameFragment: offer.Candidate.UsernameFragment,
+				},
+			}
 		case <-ctx.Done():
 			return nil
 		}

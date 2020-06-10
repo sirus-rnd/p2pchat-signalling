@@ -21,6 +21,7 @@ var _ = Describe("API", func() {
 		ICEServers  *[]signaling.ICEServer
 		SDPCommands chan *signaling.SDPCommand
 		roomEvents  chan *room.RoomEvent
+		ICEOffers   chan *signaling.ICEOffer
 		api         signaling.API
 	)
 
@@ -59,7 +60,10 @@ var _ = Describe("API", func() {
 				MacKey:         faker.RandomString(50),
 			},
 		}
-		api = signaling.API{db, logger, ICEServers, SDPCommands, roomEvents}
+		api = signaling.API{
+			db, logger, ICEServers,
+			SDPCommands, roomEvents, ICEOffers,
+		}
 	})
 
 	var (
