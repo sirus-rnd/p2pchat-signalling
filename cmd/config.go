@@ -13,23 +13,25 @@ import (
 
 // Config define service configuration structure
 type Config struct {
-	LogLevel       string                    `mapstructure:"log_level"`
-	Postgres       *connector.PostgresConfig `mapstructure:"postgres"`
-	Port           int                       `mapstructure:"port"`
-	EventNamespace string                    `mapstructure:"event_namespace"`
-	AccessSecret   string                    `mapstructure:"access_secret"`
-	NatsURL        string                    `mapstructure:"nats_url"`
-	ICEServers     *[]signaling.ICEServer    `mapstructure:"ice_servers"`
+	LogLevel        string                    `mapstructure:"log_level"`
+	Postgres        *connector.PostgresConfig `mapstructure:"postgres"`
+	SignalingPort   int                       `mapstructure:"signaling_port"`
+	RoomManagerPort int                       `mapstructure:"room_manger_port"`
+	EventNamespace  string                    `mapstructure:"event_namespace"`
+	AccessSecret    string                    `mapstructure:"access_secret"`
+	NatsURL         string                    `mapstructure:"nats_url"`
+	ICEServers      *[]signaling.ICEServer    `mapstructure:"ice_servers"`
 }
 
 // DefaultConfig is default configuration
 var DefaultConfig = Config{
-	LogLevel:       "info",
-	Postgres:       connector.DefaultPostgresConfig,
-	Port:           8053,
-	EventNamespace: "qh",
-	NatsURL:        nats.DefaultOptions.Url,
-	AccessSecret:   "access-secret",
+	LogLevel:        "info",
+	Postgres:        connector.DefaultPostgresConfig,
+	SignalingPort:   8053,
+	RoomManagerPort: 8052,
+	EventNamespace:  "qh",
+	NatsURL:         nats.DefaultOptions.Url,
+	AccessSecret:    "access-secret",
 	ICEServers: &[]signaling.ICEServer{
 		{URL: "stun.l.google.com:19302"},
 		{URL: "stun.fwdnet.net"},

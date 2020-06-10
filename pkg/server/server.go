@@ -11,46 +11,62 @@ import (
 // New wil create new instance of server
 func New(
 	signalingSvc *SignalingService,
-	roomManagerSvc *RoomManagementService,
-	port int,
+	signalingPort int,
+	roomMngrSvc *RoomManagementService,
+	roomMngrPort int,
 ) *Server {
 	return &Server{
-		SignalingSvc:   signalingSvc,
-		RoomManagerSvc: roomManagerSvc,
-		Port:           port,
+		SignalingSvc:  signalingSvc,
+		SignalingPort: signalingPort,
+		RoomMngrSvc:   roomMngrSvc,
+		RoomMngrPort:  roomMngrPort,
 	}
 }
 
 // Server act as transport layer
 type Server struct {
-	SignalingSvc   *SignalingService
-	RoomManagerSvc *RoomManagementService
-	GRPCServer     *grpc.Server
-	Port           int
+	SignalingSvc    *SignalingService
+	SignalingServer *grpc.Server
+	SignalingPort   int
+	RoomMngrSvc     *RoomManagementService
+	RoomMngrServer  *grpc.Server
+	RoomMngrPort    int
 }
 
-// Start will start serve signaling & room management service in GRPC server
-func (s *Server) Start() error {
+// StartSignaling will start serve signaling service in GRPC server
+func (s *Server) StartSignaling() error {
 	options := []grpc.ServerOption{}
-
-	// create gRPC server
-	s.GRPCServer = grpc.NewServer(options...)
+	s.SignalingServer = grpc.NewServer(options...)
 	go s.SignalingSvc.Run()
-	go s.RoomManagerSvc.Run()
-
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", s.Port))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", s.SignalingPort))
 	if err != nil {
 		return err
 	}
-	protos.RegisterSignalingServiceServer(s.GRPCServer, s.SignalingSvc)
-	protos.RegisterRoomManagementServiceServer(s.GRPCServer, s.RoomManagerSvc)
-	return s.GRPCServer.Serve(lis)
+	protos.RegisterSignalingServiceServer(s.SignalingServer, s.SignalingSvc)
+
+	return s.SignalingServer.Serve(lis)
 }
 
-// Stop will stop GRPC server
+// StartRoomManager will start serve room management service in GRPC server
+func (s *Server) StartRoomManager() error {
+	options := []grpc.ServerOption{}
+	s.RoomMngrServer = grpc.NewServer(options...)
+	go s.RoomMngrSvc.Run()
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", s.RoomMngrPort))
+	if err != nil {
+		return err
+	}
+	protos.RegisterRoomManagementServiceServer(s.RoomMngrServer, s.RoomMngrSvc)
+	return s.RoomMngrServer.Serve(lis)
+}
+
+// Stop will stop all gRPC server
 func (s *Server) Stop() error {
-	if s.GRPCServer != nil {
-		s.GRPCServer.Stop()
+	if s.SignalingServer != nil {
+		s.SignalingServer.Stop()
+	}
+	if s.RoomMngrServer != nil {
+		s.RoomMngrServer.Stop()
 	}
 	return nil
 }

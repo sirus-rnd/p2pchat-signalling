@@ -67,11 +67,21 @@ var rootCmd = &cobra.Command{
 		)
 
 		// create server
-		logger.Infof("start server on port %d", conf.Port)
-		svc := server.New(signalingSvc, roomManagerSvc, conf.Port)
-		err = svc.Start()
+		svc := server.New(
+			signalingSvc, conf.SignalingPort,
+			roomManagerSvc, conf.RoomManagerPort,
+		)
+		go func() {
+			logger.Infof("start room manager server on port %d", conf.RoomManagerPort)
+			err = svc.StartRoomManager()
+			if err != nil {
+				logger.Errorf("failed to start room manager server", err)
+			}
+		}()
+		logger.Infof("start signaling server on port %d", conf.SignalingPort)
+		err = svc.StartSignaling()
 		if err != nil {
-			logger.Errorf("failed to start server", err)
+			logger.Errorf("failed to start signaling server", err)
 		}
 	},
 }
