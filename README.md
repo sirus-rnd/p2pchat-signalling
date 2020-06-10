@@ -26,3 +26,10 @@ make init # (optional) for first build only
 make run
 ```
 
+## GRPC server
+
+to consume grpc service we need to run GRPC web proxy
+
+```bash
+grpcwebproxy --allow_all_origins --run_tls_server=false --use_websockets --backend_tls=false --backend_addr=localhost:8053 --server_http_debug_port=9012
+```

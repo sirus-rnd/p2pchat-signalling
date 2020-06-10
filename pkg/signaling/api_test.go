@@ -198,7 +198,8 @@ var _ = Describe("API", func() {
 			Expect(res.Photo).To(Equal(u1.Photo))
 			Expect(res.Servers).To(ConsistOf(
 				&protos.ICEServer{
-					Url: (*ICEServers)[0].URL,
+					Url:            (*ICEServers)[0].URL,
+					CredentialType: protos.ICECredentialType_NONE,
 				},
 				&protos.ICEServer{
 					Url:            (*ICEServers)[1].URL,

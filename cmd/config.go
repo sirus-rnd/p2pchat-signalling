@@ -33,9 +33,9 @@ var DefaultConfig = Config{
 	NatsURL:         nats.DefaultOptions.Url,
 	AccessSecret:    "access-secret",
 	ICEServers: &[]signaling.ICEServer{
-		{URL: "stun.l.google.com:19302"},
-		{URL: "stun.fwdnet.net"},
-		{URL: "stunserver.org"},
+		{URL: "stun:stun.l.google.com:19302"},
+		{URL: "stun:stun.fwdnet.net"},
+		{URL: "stun:stunserver.org"},
 	},
 }
 

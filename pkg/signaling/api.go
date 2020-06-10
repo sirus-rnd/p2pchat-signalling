@@ -14,7 +14,8 @@ import (
 )
 
 const (
-	CredentialTypePassword = iota
+	CredentialTypeNone = iota
+	CredentialTypePassword
 	CredentialTypeOAuth
 )
 
