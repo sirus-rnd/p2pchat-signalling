@@ -33,26 +33,10 @@ type SDPCommand struct {
 
 // ICEOffer contain ICE candidate offer from user to another user
 type ICEOffer struct {
-	From      string        `json:"from"`
-	To        string        `json:"to"`
-	Candidate *ICECandidate `json:"candidate"`
-}
-
-// ICECandidate interface—part of the WebRTC API—represents a candidate Internet Connectivity Establishment (ICE) configuration which may be used to establish an RTCPeerConnection
-type ICECandidate struct {
-	Candidate        string `json:"candidate"`
-	Component        string `json:"component"`
-	Foundation       string `json:"foundation"`
-	Port             int32  `json:"port"`
-	Priority         int32  `json:"priority"`
-	Protocol         string `json:"protocol"`
-	RelatedAddress   string `json:"relatedAddress"`
-	RelatedPort      int32  `json:"relatedPort"`
-	SDPMLineIndex    int32  `json:"sdpMLineIndex"`
-	SDPMid           string `json:"sdpMid"`
-	TCPType          string `json:"tcpType"`
-	Type             string `json:"type"`
-	UsernameFragment string `json:"usernameFragment"`
+	From      string `json:"from"`
+	To        string `json:"to"`
+	IsRemote  bool   `json:"isRemote"`
+	Candidate string `json:"candidate"`
 }
 
 // ISignaling act as intermediary to give signal from peer to other peer

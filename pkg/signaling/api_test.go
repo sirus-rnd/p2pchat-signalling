@@ -163,6 +163,21 @@ var _ = Describe("API", func() {
 		})
 	})
 
+	Describe("GetICEOffers", func() {
+		It("should return ICE candidate offer channel", func() {
+			e := api.GetICEOffers()
+			Expect(e).To(Equal(ICEOffers))
+		})
+	})
+
+	Describe("SetICEOffers", func() {
+		It("should set ICE candidate offer channel", func() {
+			e := make(chan *signaling.ICEOffer)
+			api.SetICEOffers(e)
+			Expect(api.ICEs).To(Equal(e))
+		})
+	})
+
 	Describe("GetUserContext", func() {
 		It("should return current user context", func() {
 			ctx := context.WithValue(context.Background(), room.UserIDKey, u1.ID)

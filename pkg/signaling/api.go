@@ -546,23 +546,10 @@ func (a *API) SendICECandidate(
 		return err
 	}
 	a.ICEs <- &ICEOffer{
-		To:   param.UserID,
-		From: user.ID,
-		Candidate: &ICECandidate{
-			Candidate:        param.Candidate.Candidate,
-			Component:        param.Candidate.Component,
-			Foundation:       param.Candidate.Foundation,
-			Port:             param.Candidate.Port,
-			Priority:         param.Candidate.Priority,
-			Protocol:         param.Candidate.Protocol,
-			RelatedAddress:   param.Candidate.RelatedAddress,
-			RelatedPort:      param.Candidate.RelatedPort,
-			SDPMLineIndex:    param.Candidate.SdpMLineIndex,
-			SDPMid:           param.Candidate.SdpMid,
-			TCPType:          param.Candidate.TcpType,
-			Type:             param.Candidate.Type,
-			UsernameFragment: param.Candidate.UsernameFragment,
-		},
+		From:      user.ID,
+		To:        param.UserID,
+		IsRemote:  param.IsRemote,
+		Candidate: param.Candidate,
 	}
 	return nil
 }
@@ -587,22 +574,9 @@ func (a *API) SubscribeICECandidate(
 				continue
 			}
 			protoOffers <- &protos.ICEOffer{
-				SenderID: offer.From,
-				Candidate: &protos.ICECandidate{
-					Candidate:        offer.Candidate.Candidate,
-					Component:        offer.Candidate.Component,
-					Foundation:       offer.Candidate.Foundation,
-					Port:             offer.Candidate.Port,
-					Priority:         offer.Candidate.Priority,
-					Protocol:         offer.Candidate.Protocol,
-					RelatedAddress:   offer.Candidate.RelatedAddress,
-					RelatedPort:      offer.Candidate.RelatedPort,
-					SdpMLineIndex:    offer.Candidate.SDPMLineIndex,
-					SdpMid:           offer.Candidate.SDPMid,
-					TcpType:          offer.Candidate.TCPType,
-					Type:             offer.Candidate.Type,
-					UsernameFragment: offer.Candidate.UsernameFragment,
-				},
+				SenderID:  offer.From,
+				IsRemote:  offer.IsRemote,
+				Candidate: offer.Candidate,
 			}
 		case <-ctx.Done():
 			return nil

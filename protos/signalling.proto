@@ -193,27 +193,13 @@ message UserInstanceEventPayload {
 }
 
 message ICEParam {
-  ICECandidate candidate = 1;
+  string candidate = 1;
   string userID = 2;
+  bool isRemote = 3;
 }
 
 message ICEOffer {
-  ICECandidate candidate = 1;
-  string senderID = 2;
-}
-
-message ICECandidate {
   string candidate = 1;
-  string component = 2;
-  string foundation = 3;
-  int32 port = 4;
-  int32 priority = 5;
-  string protocol = 6;
-  string relatedAddress = 7;
-  int32 relatedPort = 8;
-  int32 sdpMLineIndex = 9;
-  string sdpMid = 10;
-  string tcpType = 11;
-  string type = 12;
-  string usernameFragment = 13;
+  string senderID = 2;
+  bool isRemote = 3;
 }
