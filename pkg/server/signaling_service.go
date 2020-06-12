@@ -282,10 +282,37 @@ func (s *SignalingService) SubscribeICECandidate(
 // when user call this function user status will change to online
 // status will pull back to offline after this function exit
 func (s *SignalingService) SubscribeOnlineStatus(
-	*empty.Empty,
-	protos.SignalingService_SubscribeOnlineStatusServer,
+	req *empty.Empty,
+	srv protos.SignalingService_SubscribeOnlineStatusServer,
 ) error {
-	return nil
+	ctx := srv.Context()
+	ctx, err := s.SetUserContext(ctx)
+	if err != nil {
+		return err
+	}
+	statusChanges := make(chan *signaling.OnlineStatus)
+	protoStatusChanges := make(chan *protos.OnlineStatus)
+	var errc error
+	sub, err := s.SubscribeNatsOnlineStatus(statusChanges, nil)
+	if err != nil {
+		return err
+	}
+	defer sub.Unsubscribe()
+	go func() {
+		err := s.Signaling.SubscribeOnlineStatus(ctx, statusChanges, protoStatusChanges)
+		if err != nil {
+			errc = err
+		}
+		close(statusChanges)
+		close(protoStatusChanges)
+	}()
+	for statusChange := range protoStatusChanges {
+		err := srv.Send(statusChange)
+		if err != nil {
+			return err
+		}
+	}
+	return errc
 }
 
 // Run signaling service
