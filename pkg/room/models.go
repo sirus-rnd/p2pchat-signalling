@@ -17,8 +17,9 @@ type RoomModel struct {
 
 // UserModel define user information save on database
 type UserModel struct {
-	ID    string       `gorm:"primary_key;not null;size:100"`
-	Name  string       `gorm:"column:name;"`
-	Photo string       `gorm:"column:photo;"`
-	Rooms []*RoomModel `gorm:"many2many:room_members;save_associations:false;"`
+	ID     string       `gorm:"primary_key;not null;size:100"`
+	Name   string       `gorm:"column:name;"`
+	Photo  string       `gorm:"column:photo;"`
+	Online bool         `gorm:"column:online;default:false"`
+	Rooms  []*RoomModel `gorm:"many2many:room_members;save_associations:false;"`
 }

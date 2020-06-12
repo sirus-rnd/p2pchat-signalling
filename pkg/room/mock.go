@@ -4,10 +4,15 @@ import "syreclabs.com/go/faker"
 
 // FakeUser return random fake user data
 func FakeUser() *UserModel {
+	online := false
+	if faker.RandomChoice([]string{"y", "n"}) == "y" {
+		online = true
+	}
 	return &UserModel{
-		ID:    faker.RandomString(5),
-		Name:  faker.Name().Name(),
-		Photo: faker.Avatar().String(),
+		ID:     faker.RandomString(5),
+		Name:   faker.Name().Name(),
+		Photo:  faker.Avatar().String(),
+		Online: online,
 	}
 }
 

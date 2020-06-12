@@ -117,6 +117,14 @@ func (s *SignalingService) GetRoom(
 	return s.Signaling.MyRoomInfo(ctx, req)
 }
 
+// GetUser return user information by it's id
+func (s *SignalingService) GetUser(
+	ctx context.Context,
+	req *protos.GetUserParam,
+) (*protos.User, error) {
+	return s.Signaling.GetUser(ctx, req)
+}
+
 // OfferSessionDescription will send session description offer from a peer to target peers
 func (s *SignalingService) OfferSessionDescription(
 	ctx context.Context,
@@ -270,6 +278,16 @@ func (s *SignalingService) SubscribeICECandidate(
 	return errc
 }
 
+// SubscribeOnlineStatus act as pull-on switch mechanism for user online state
+// when user call this function user status will change to online
+// status will pull back to offline after this function exit
+func (s *SignalingService) SubscribeOnlineStatus(
+	*empty.Empty,
+	protos.SignalingService_SubscribeOnlineStatusServer,
+) error {
+	return nil
+}
+
 // Run signaling service
 // this should be called before serve service to network
 // - wire room event and SDP command to NATS message bus
@@ -278,15 +296,19 @@ func (s *SignalingService) Run() {
 	r1c := make(chan *room.RoomEvent)
 	s1c := make(chan *signaling.SDPCommand)
 	ioc := make(chan *signaling.ICEOffer)
+	uol := make(chan *signaling.OnlineStatus)
 	defer close(r1c)
 	defer close(s1c)
 	defer close(ioc)
+	defer close(uol)
 	s.Signaling.SetRoomEvents(r1c)
 	s.Signaling.SetCommands(s1c)
 	s.Signaling.SetICEOffers(ioc)
+	s.Signaling.SetOnlineStatus(uol)
 	go s.PublishRoomEvent(r1c)
 	go s.PublishSDPCommand(s1c)
 	go s.PublishICEOffer(ioc)
+	go s.PublishOnlineStatus(uol)
 
 	// keep it running
 	for {
@@ -477,4 +499,43 @@ func (s *SignalingService) SubscribeNatsICEOffer(
 		return s.Nats.QueueSubscribe(s.EventNamespace+"."+signaling.ICECandidateOffer, *queue, handler)
 	}
 	return s.Nats.Subscribe(s.EventNamespace+"."+signaling.ICECandidateOffer, handler)
+}
+
+// PublishOnlineStatus will publish user online status changes
+func (s *SignalingService) PublishOnlineStatus(
+	statusChanges chan *signaling.OnlineStatus,
+) error {
+	for status := range statusChanges {
+		if status == nil {
+			continue
+		}
+		subject := s.EventNamespace + "." + signaling.OnlineStatusChangeEvent
+		err := s.Nats.Publish(subject, status)
+		if err != nil {
+			s.Logger.Error(err)
+			continue
+		}
+	}
+	return nil
+}
+
+// SubscribeNatsOnlineStatus will subscribe native nats message
+// parsed the payload and passed it to online status channel
+func (s *SignalingService) SubscribeNatsOnlineStatus(
+	statusChanges chan *signaling.OnlineStatus,
+	queue *string,
+) (*nats.Subscription, error) {
+	handler := func(m *nats.Msg) {
+		statusChange := &signaling.OnlineStatus{}
+		err := json.Unmarshal(m.Data, statusChange)
+		if err != nil {
+			s.Logger.Error(err)
+			return
+		}
+		statusChanges <- statusChange
+	}
+	if queue != nil {
+		return s.Nats.QueueSubscribe(s.EventNamespace+"."+signaling.OnlineStatusChangeEvent, *queue, handler)
+	}
+	return s.Nats.Subscribe(s.EventNamespace+"."+signaling.OnlineStatusChangeEvent, handler)
 }

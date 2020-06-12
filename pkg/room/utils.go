@@ -24,8 +24,9 @@ func RoomModelToProto(model *RoomModel) *protos.Room {
 // UserModelToProto will convert user model to it's proto representation
 func UserModelToProto(model *UserModel) *protos.User {
 	return &protos.User{
-		Id:    model.ID,
-		Name:  model.Name,
-		Photo: model.Photo,
+		Id:     model.ID,
+		Name:   model.Name,
+		Photo:  model.Photo,
+		Online: model.Online,
 	}
 }

@@ -26,12 +26,14 @@ service SignalingService {
   rpc UpdateProfile(UpdateProfileParam) returns (Profile) {}
   rpc GetMyRooms(google.protobuf.Empty) returns (Rooms) {}
   rpc GetRoom(GetRoomParam) returns (Room) {}
+  rpc GetUser(GetUserParam) returns (User) {}
   rpc OfferSessionDescription(SDPParam) returns (google.protobuf.Empty) {}
   rpc AnswerSessionDescription(SDPParam) returns (google.protobuf.Empty) {}
   rpc SubscribeSDPCommand(google.protobuf.Empty) returns (stream SDP) {}
   rpc SubscribeRoomEvent(google.protobuf.Empty) returns (stream RoomEvent) {}
   rpc SendICECandidate(ICEParam) returns (google.protobuf.Empty) {}
   rpc SubscribeICECandidate(google.protobuf.Empty) returns (stream ICEOffer) {}
+  rpc SubscribeOnlineStatus(google.protobuf.Empty) returns (stream OnlineStatus) {}
 }
 
 message NewUserParam {
@@ -48,6 +50,12 @@ message User {
   string id = 1;
   string name = 2;
   string photo = 3;
+  bool online = 4;
+}
+
+message OnlineStatus {
+  string id = 1;
+  bool online = 2;
 }
 
 message Users {

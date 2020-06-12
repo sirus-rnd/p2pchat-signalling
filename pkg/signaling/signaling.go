@@ -14,6 +14,8 @@ const (
 	SDPAnswerCommand = "chat.sdp.answer"
 	// ICECandidateOffer emitted during candidate negotiations between peers
 	ICECandidateOffer = "chat.ice-candidate"
+	// OnlineStatusChangeEvent emitted when user are offline / online
+	OnlineStatusChangeEvent = "chat.user.online-change"
 )
 
 const (
@@ -39,6 +41,12 @@ type ICEOffer struct {
 	Candidate string `json:"candidate"`
 }
 
+// OnlineStatus emitted when user with `id` has online state change
+type OnlineStatus struct {
+	ID     string `json:"id"`
+	Online bool   `json:"online"`
+}
+
 // ISignaling act as intermediary to give signal from peer to other peer
 // so they be able communicate to each other within same channel / rooms
 type ISignaling interface {
@@ -48,10 +56,13 @@ type ISignaling interface {
 	SetRoomEvents(chan *room.RoomEvent)
 	GetICEOffers() chan *ICEOffer
 	SetICEOffers(offers chan *ICEOffer)
+	GetOnlineStatus() chan *OnlineStatus
+	SetOnlineStatus(statusChanges chan *OnlineStatus)
 	MyProfile(ctx context.Context) (*protos.Profile, error)
 	UpdateProfile(ctx context.Context, param *protos.UpdateProfileParam) (*protos.Profile, error)
 	MyRooms(ctx context.Context) (*protos.Rooms, error)
 	MyRoomInfo(ctx context.Context, param *protos.GetRoomParam) (*protos.Room, error)
+	GetUser(ctx context.Context, param *protos.GetUserParam) (*protos.User, error)
 	OfferSDP(ctx context.Context, param *protos.SDPParam) error
 	AnswerSDP(ctx context.Context, param *protos.SDPParam) error
 	SubscribeSDPCommand(
@@ -69,5 +80,10 @@ type ISignaling interface {
 		ctx context.Context,
 		offers <-chan *ICEOffer,
 		protoOffers chan<- *protos.ICEOffer,
+	) error
+	SubscribeOnlineStatus(
+		ctx context.Context,
+		statusChanges <-chan *OnlineStatus,
+		protoStatusChanges chan<- *protos.OnlineStatus,
 	) error
 }

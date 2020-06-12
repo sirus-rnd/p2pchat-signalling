@@ -71,6 +71,7 @@ type API struct {
 	Commands   chan *SDPCommand
 	Events     chan *room.RoomEvent
 	ICEs       chan *ICEOffer
+	Onlines    chan *OnlineStatus
 }
 
 // GetCommands return SDP command channel
@@ -101,6 +102,16 @@ func (a *API) GetICEOffers() chan *ICEOffer {
 // SetICEOffers will set channel use to publish ICE candidate offers
 func (a *API) SetICEOffers(offers chan *ICEOffer) {
 	a.ICEs = offers
+}
+
+// GetOnlineStatus will return channel use to publish online status changes
+func (a *API) GetOnlineStatus() chan *OnlineStatus {
+	return a.Onlines
+}
+
+// SetOnlineStatus will set channel use to publish user online status changes
+func (a *API) SetOnlineStatus(statusChanges chan *OnlineStatus) {
+	a.Onlines = statusChanges
 }
 
 // GetUserContext will return user context for an invocation
@@ -262,6 +273,20 @@ func (a *API) MyRoomInfo(ctx context.Context, param *protos.GetRoomParam) (*prot
 	}
 	// return room with members
 	return room.RoomModelToProto(r), nil
+}
+
+// GetUser return user information by it's id
+func (a *API) GetUser(ctx context.Context, param *protos.GetUserParam) (*protos.User, error) {
+	user := &room.UserModel{}
+	err := a.DB.Where(&room.UserModel{ID: param.Id}).
+		First(user).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, fmt.Errorf(room.UserNotFoundError)
+		}
+		return nil, err
+	}
+	return room.UserModelToProto(user), nil
 }
 
 // OfferSDP will send session description offer from a peer to target peers
@@ -582,4 +607,65 @@ func (a *API) SubscribeICECandidate(
 			return nil
 		}
 	}
+}
+
+// SubscribeOnlineStatus act as pull-on switch mechanism for user online state
+// when user call this function user status will change to online
+// status will pull back to offline after this function exit
+func (a *API) SubscribeOnlineStatus(
+	ctx context.Context,
+	statusChanges <-chan *OnlineStatus,
+	protoStatusChanges chan<- *protos.OnlineStatus,
+) error {
+	user, err := a.GetUserContext(ctx)
+	if err != nil {
+		return err
+	}
+	// set user status as online
+	err = a.SetUserOnlineStatus(user.ID, true)
+	if err != nil {
+		return err
+	}
+	// pull off online status after user check-out
+	defer func() error {
+		return a.SetUserOnlineStatus(user.ID, false)
+	}()
+	for {
+		select {
+		case status := <-statusChanges:
+			if status == nil {
+				continue
+			}
+			if status.ID == user.ID {
+				continue
+			}
+			protoStatusChanges <- &protos.OnlineStatus{
+				Id:     status.ID,
+				Online: status.Online,
+			}
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+// SetUserOnlineStatus will set user online status
+func (a *API) SetUserOnlineStatus(
+	id string,
+	online bool,
+) error {
+	status := &room.UserModel{}
+	err := a.DB.Model(&status).
+		Where(&room.UserModel{ID: id}).
+		Update("online", online).
+		Error
+	if err != nil {
+		return err
+	}
+	// publish status changes
+	a.Onlines <- &OnlineStatus{
+		ID:     id,
+		Online: online,
+	}
+	return nil
 }

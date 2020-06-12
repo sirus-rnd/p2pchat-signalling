@@ -10,7 +10,8 @@ import (
 func ConnectToMemmory(models []interface{}) (*gorm.DB, error) {
 	db, err := gorm.Open(
 		"sqlite3",
-		":memory:",
+		// ":memory:",
+		"file::memory:?cache=shared",
 	)
 	if err != nil {
 		return nil, err

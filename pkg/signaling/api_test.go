@@ -16,13 +16,14 @@ import (
 
 var _ = Describe("API", func() {
 	var (
-		db          *gorm.DB
-		logger      *zap.SugaredLogger
-		ICEServers  *[]signaling.ICEServer
-		SDPCommands chan *signaling.SDPCommand
-		roomEvents  chan *room.RoomEvent
-		ICEOffers   chan *signaling.ICEOffer
-		api         signaling.API
+		db           *gorm.DB
+		logger       *zap.SugaredLogger
+		ICEServers   *[]signaling.ICEServer
+		SDPCommands  chan *signaling.SDPCommand
+		roomEvents   chan *room.RoomEvent
+		ICEOffers    chan *signaling.ICEOffer
+		OnlineStatus chan *signaling.OnlineStatus
+		api          signaling.API
 	)
 
 	BeforeEach(func() {
@@ -40,6 +41,8 @@ var _ = Describe("API", func() {
 		logger = loggerRaw.Sugar()
 		roomEvents = make(chan *room.RoomEvent)
 		SDPCommands = make(chan *signaling.SDPCommand)
+		ICEOffers = make(chan *signaling.ICEOffer)
+		OnlineStatus = make(chan *signaling.OnlineStatus)
 		// add some public stun server
 		// and private turn server
 		ICEServers = &[]signaling.ICEServer{
@@ -63,6 +66,7 @@ var _ = Describe("API", func() {
 		api = signaling.API{
 			db, logger, ICEServers,
 			SDPCommands, roomEvents, ICEOffers,
+			OnlineStatus,
 		}
 	})
 
@@ -175,6 +179,21 @@ var _ = Describe("API", func() {
 			e := make(chan *signaling.ICEOffer)
 			api.SetICEOffers(e)
 			Expect(api.ICEs).To(Equal(e))
+		})
+	})
+
+	Describe("GetOnlineStatus", func() {
+		It("should return user online status channel", func() {
+			e := api.GetOnlineStatus()
+			Expect(e).To(Equal(OnlineStatus))
+		})
+	})
+
+	Describe("SetOnlineStatus", func() {
+		It("should set user online status channel", func() {
+			e := make(chan *signaling.OnlineStatus)
+			api.SetOnlineStatus(e)
+			Expect(api.Onlines).To(Equal(e))
 		})
 	})
 
@@ -405,8 +424,33 @@ var _ = Describe("API", func() {
 		})
 	})
 
+	Describe("GetUser", func() {
+		It("should return user by it's id", func() {
+			ctx := context.Background()
+			res, err := api.GetUser(ctx, &protos.GetUserParam{
+				Id: u1.ID,
+			})
+			Expect(err).To(BeNil())
+			Expect(res.Id).To(Equal(u1.ID))
+			Expect(res.Name).To(Equal(u1.Name))
+			Expect(res.Photo).To(Equal(u1.Photo))
+			Expect(res.Online).To(Equal(u1.Online))
+		})
+
+		When("user not exist", func() {
+			It("should return user not found error", func() {
+				ctx := context.Background()
+				res, err := api.GetUser(ctx, &protos.GetUserParam{
+					Id: "non-exist-id",
+				})
+				Expect(res).To(BeNil())
+				Expect(err.Error()).To(Equal(room.UserNotFoundError))
+			})
+		})
+	})
+
 	Describe("OfferSDP", func() {
-		It("should publish SDP offer command from user", func() {
+		It("should publish SDP offer command from user", func(done Done) {
 			ctx := context.WithValue(context.Background(), room.UserIDKey, u1.ID)
 			param := &protos.SDPParam{
 				Description: faker.Lorem().Paragraph(3),
@@ -421,11 +465,12 @@ var _ = Describe("API", func() {
 			Expect(command.From).To(Equal(u1.ID))
 			Expect(command.To).To(Equal(param.UserID))
 			Expect(command.Description).To(Equal(param.Description))
-		})
+			close(done)
+		}, 0.3)
 	})
 
 	Describe("AnswerSDP", func() {
-		It("should publish SDP answer command from user", func() {
+		It("should publish SDP answer command from user", func(done Done) {
 			ctx := context.WithValue(context.Background(), room.UserIDKey, u2.ID)
 			param := &protos.SDPParam{
 				Description: faker.Lorem().Paragraph(3),
@@ -440,7 +485,8 @@ var _ = Describe("API", func() {
 			Expect(command.From).To(Equal(u2.ID))
 			Expect(command.To).To(Equal(param.UserID))
 			Expect(command.Description).To(Equal(param.Description))
-		})
+			close(done)
+		}, 0.3)
 	})
 
 	Describe("SubscribeSDPCommand", func() {
@@ -1034,6 +1080,242 @@ var _ = Describe("API", func() {
 					events <- event
 				}()
 				Consistently(myRoomEvents).ShouldNot(Receive())
+				close(done)
+			}, 0.3)
+		})
+	})
+
+	Describe("SendICECandidate", func() {
+		It("should publish ICE candidate", func(done Done) {
+			ctx := context.WithValue(context.Background(), room.UserIDKey, u1.ID)
+			param := &protos.ICEParam{
+				UserID:    u2.ID,
+				IsRemote:  false,
+				Candidate: faker.RandomString(200),
+			}
+			go func() {
+				err := api.SendICECandidate(ctx, param)
+				Expect(err).To(BeNil())
+			}()
+			ice := <-api.ICEs
+			Expect(ice.From).To(Equal(u1.ID))
+			Expect(ice.To).To(Equal(param.UserID))
+			Expect(ice.IsRemote).To(Equal(param.IsRemote))
+			Expect(ice.Candidate).To(Equal(param.Candidate))
+			close(done)
+		}, 0.3)
+	})
+
+	Describe("SubscribeICECandidate", func() {
+		When("other user send ICE candidate to user", func() {
+			It("should receive ICE candiate", func(done Done) {
+				offers := make(chan *signaling.ICEOffer)
+				protoOffers := make(chan *protos.ICEOffer)
+				offer := &signaling.ICEOffer{
+					From:      u2.ID,
+					To:        u1.ID,
+					Candidate: faker.RandomString(200),
+					IsRemote:  true,
+				}
+				go func() {
+					ctx := context.WithValue(
+						context.Background(), room.UserIDKey, u1.ID)
+					api.SubscribeICECandidate(ctx, offers, protoOffers)
+				}()
+				go func() {
+					offers <- offer
+				}()
+				p := <-protoOffers
+				Expect(p.SenderID).To(Equal(offer.From))
+				Expect(p.IsRemote).To(Equal(offer.IsRemote))
+				Expect(p.Candidate).To(Equal(offer.Candidate))
+				close(done)
+			}, 0.3)
+		})
+
+		When("other user send ICE candidate to other user", func() {
+			It("should not receive ICE candiate", func(done Done) {
+				offers := make(chan *signaling.ICEOffer)
+				protoOffers := make(chan *protos.ICEOffer)
+				offer := &signaling.ICEOffer{
+					From:      u2.ID,
+					To:        u3.ID,
+					Candidate: faker.RandomString(200),
+					IsRemote:  true,
+				}
+				go func() {
+					ctx := context.WithValue(
+						context.Background(), room.UserIDKey, u1.ID)
+					api.SubscribeICECandidate(ctx, offers, protoOffers)
+				}()
+				go func() {
+					offers <- offer
+				}()
+				Consistently(protoOffers).ShouldNot(Receive())
+				close(done)
+			}, 0.3)
+		})
+	})
+
+	Describe("SubscribeOnlineStatus", func() {
+		When("subscription active", func() {
+			It("should set user status to online", func(done Done) {
+				statusChanges := make(chan *signaling.OnlineStatus)
+				protoStatusChanges := make(chan *protos.OnlineStatus)
+				statusChange := &signaling.OnlineStatus{
+					ID:     u2.ID,
+					Online: false,
+				}
+				go func() {
+					ctx := context.WithValue(context.Background(), room.UserIDKey, u1.ID)
+					api.SubscribeOnlineStatus(ctx, statusChanges, protoStatusChanges)
+				}()
+				go func() {
+					statusChanges <- statusChange
+				}()
+				go func() {
+					<-api.Onlines
+					<-api.Onlines
+				}()
+				<-protoStatusChanges
+				u, _ := api.GetUser(
+					context.Background(),
+					&protos.GetUserParam{Id: u1.ID})
+				Expect(u.Online).To(BeTrue())
+				close(done)
+			}, 0.3)
+		})
+
+		When("subscription end", func() {
+			It("should set user status to offline", func(done Done) {
+				statusChanges := make(chan *signaling.OnlineStatus)
+				protoStatusChanges := make(chan *protos.OnlineStatus)
+				statusChange := &signaling.OnlineStatus{
+					ID:     u2.ID,
+					Online: false,
+				}
+				ctx := context.WithValue(context.Background(), room.UserIDKey, u1.ID)
+				ctx, cancel := context.WithCancel(ctx)
+				go func() {
+					api.SubscribeOnlineStatus(ctx, statusChanges, protoStatusChanges)
+				}()
+				go func() {
+					statusChanges <- statusChange
+				}()
+				go func() {
+					<-api.Onlines
+					<-api.Onlines
+				}()
+				<-protoStatusChanges
+				cancel()
+				u, err := api.GetUser(
+					context.Background(),
+					&protos.GetUserParam{Id: u1.ID})
+				Expect(err).To(BeNil())
+				Expect(u.Online).To(BeFalse())
+				close(done)
+			}, 0.3)
+		})
+
+		When("other user online status change", func() {
+			It("should receive status change event", func(done Done) {
+				statusChanges := make(chan *signaling.OnlineStatus)
+				protoStatusChanges := make(chan *protos.OnlineStatus)
+				statusChange := &signaling.OnlineStatus{
+					ID:     u2.ID,
+					Online: false,
+				}
+				go func() {
+					ctx := context.WithValue(context.Background(), room.UserIDKey, u1.ID)
+					api.SubscribeOnlineStatus(ctx, statusChanges, protoStatusChanges)
+				}()
+				go func() {
+					statusChanges <- statusChange
+				}()
+				go func() {
+					<-api.Onlines
+					<-api.Onlines
+				}()
+				status := <-protoStatusChanges
+				Expect(status.Id).To(Equal(statusChange.ID))
+				Expect(status.Online).To(Equal(statusChange.Online))
+				close(done)
+			}, 0.3)
+		})
+
+		When("our user online status change", func() {
+			It("should not receive status change event", func(done Done) {
+				statusChanges := make(chan *signaling.OnlineStatus)
+				protoStatusChanges := make(chan *protos.OnlineStatus)
+				statusChange := &signaling.OnlineStatus{
+					ID:     u1.ID,
+					Online: false,
+				}
+				go func() {
+					ctx := context.WithValue(context.Background(), room.UserIDKey, u1.ID)
+					api.SubscribeOnlineStatus(ctx, statusChanges, protoStatusChanges)
+				}()
+				go func() {
+					statusChanges <- statusChange
+				}()
+				go func() {
+					<-api.Onlines
+					<-api.Onlines
+				}()
+				Consistently(protoStatusChanges).ShouldNot(Receive())
+				close(done)
+			}, 0.3)
+		})
+	})
+
+	Describe("SetUserOnlineStatus", func() {
+		When("user are online", func() {
+			It("should set user online status to true", func(done Done) {
+				go func() {
+					<-api.Onlines
+				}()
+				err := api.SetUserOnlineStatus(u1.ID, true)
+				Expect(err).To(BeNil())
+				u, _ := api.GetUser(
+					context.Background(),
+					&protos.GetUserParam{Id: u1.ID})
+				Expect(u.Online).To(BeTrue())
+				close(done)
+			}, 0.3)
+
+			It("should publish state change to online", func(done Done) {
+				go func() {
+					err := api.SetUserOnlineStatus(u1.ID, true)
+					Expect(err).To(BeNil())
+				}()
+				status := <-api.Onlines
+				Expect(status.ID).To(Equal(u1.ID))
+				Expect(status.Online).To(BeTrue())
+				close(done)
+			}, 0.3)
+		})
+
+		When("user are offline", func() {
+			It("should set user online status to false", func(done Done) {
+				go func() {
+					<-api.Onlines
+				}()
+				err := api.SetUserOnlineStatus(u1.ID, false)
+				Expect(err).To(BeNil())
+				u, _ := api.GetUser(
+					context.Background(),
+					&protos.GetUserParam{Id: u1.ID})
+				Expect(u.Online).To(BeFalse())
+				close(done)
+			}, 0.3)
+
+			It("should publish state change to offline", func(done Done) {
+				go func() {
+					api.SetUserOnlineStatus(u1.ID, false)
+				}()
+				status := <-api.Onlines
+				Expect(status.ID).To(Equal(u1.ID))
+				Expect(status.Online).To(BeFalse())
 				close(done)
 			}, 0.3)
 		})
