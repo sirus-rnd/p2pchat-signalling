@@ -614,6 +614,7 @@ func (a *API) SubscribeICECandidate(
 // status will pull back to offline after this function exit
 func (a *API) SubscribeOnlineStatus(
 	ctx context.Context,
+	heartbeat <-chan *protos.Heartbeat,
 	statusChanges <-chan *OnlineStatus,
 	protoStatusChanges chan<- *protos.OnlineStatus,
 ) error {
@@ -630,6 +631,27 @@ func (a *API) SubscribeOnlineStatus(
 	defer func() error {
 		return a.SetUserOnlineStatus(user.ID, false)
 	}()
+
+	// when heartbeat stop anything dead
+	dead := make(chan bool)
+	timeout := make(chan bool)
+	ttl := time.Second * 5
+	go func() {
+		var timer *time.Timer
+		timer = time.AfterFunc(ttl, func() {
+			timeout <- true
+		})
+		for {
+			select {
+			case <-heartbeat:
+				timer.Reset(ttl)
+			case <-timeout:
+				dead <- true
+				return
+			}
+		}
+	}()
+
 	for {
 		select {
 		case status := <-statusChanges:
@@ -645,6 +667,8 @@ func (a *API) SubscribeOnlineStatus(
 			}
 		case <-ctx.Done():
 			return nil
+		case <-dead:
+			return nil
 		}
 	}
 }
@@ -654,6 +678,7 @@ func (a *API) SetUserOnlineStatus(
 	id string,
 	online bool,
 ) error {
+	a.Logger.Debugf("set user %s online status to %v", id, online)
 	status := &room.UserModel{}
 	err := a.DB.Model(&status).
 		Where(&room.UserModel{ID: id}).

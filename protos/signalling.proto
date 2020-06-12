@@ -33,7 +33,7 @@ service SignalingService {
   rpc SubscribeRoomEvent(google.protobuf.Empty) returns (stream RoomEvent) {}
   rpc SendICECandidate(ICEParam) returns (google.protobuf.Empty) {}
   rpc SubscribeICECandidate(google.protobuf.Empty) returns (stream ICEOffer) {}
-  rpc SubscribeOnlineStatus(google.protobuf.Empty) returns (stream OnlineStatus) {}
+  rpc SubscribeOnlineStatus(stream Heartbeat) returns (stream OnlineStatus) {}
 }
 
 message NewUserParam {
@@ -56,6 +56,10 @@ message User {
 message OnlineStatus {
   string id = 1;
   bool online = 2;
+}
+
+message Heartbeat {
+  bool beat = 2;
 }
 
 message Users {

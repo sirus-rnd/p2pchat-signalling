@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"regexp"
 	"time"
 
@@ -282,7 +283,6 @@ func (s *SignalingService) SubscribeICECandidate(
 // when user call this function user status will change to online
 // status will pull back to offline after this function exit
 func (s *SignalingService) SubscribeOnlineStatus(
-	req *empty.Empty,
 	srv protos.SignalingService_SubscribeOnlineStatusServer,
 ) error {
 	ctx := srv.Context()
@@ -298,8 +298,24 @@ func (s *SignalingService) SubscribeOnlineStatus(
 		return err
 	}
 	defer sub.Unsubscribe()
+
+	// forward heartbeat
+	heartbeat := make(chan *protos.Heartbeat)
+	go func() error {
+		for {
+			beat, err := srv.Recv()
+			if err != nil {
+				if err == io.EOF {
+					return nil
+				}
+				return err
+			}
+			heartbeat <- beat
+		}
+	}()
+
 	go func() {
-		err := s.Signaling.SubscribeOnlineStatus(ctx, statusChanges, protoStatusChanges)
+		err := s.Signaling.SubscribeOnlineStatus(ctx, heartbeat, statusChanges, protoStatusChanges)
 		if err != nil {
 			errc = err
 		}

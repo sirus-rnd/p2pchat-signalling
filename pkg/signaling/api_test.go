@@ -2,6 +2,7 @@ package signaling_test
 
 import (
 	"context"
+	"time"
 
 	"github.com/jinzhu/gorm"
 	. "github.com/onsi/ginkgo"
@@ -1162,13 +1163,20 @@ var _ = Describe("API", func() {
 			It("should set user status to online", func(done Done) {
 				statusChanges := make(chan *signaling.OnlineStatus)
 				protoStatusChanges := make(chan *protos.OnlineStatus)
+				heartbeat := make(chan *protos.Heartbeat)
 				statusChange := &signaling.OnlineStatus{
 					ID:     u2.ID,
 					Online: false,
 				}
 				go func() {
+					for {
+						heartbeat <- &protos.Heartbeat{Beat: true}
+						time.Sleep(time.Second * 1)
+					}
+				}()
+				go func() {
 					ctx := context.WithValue(context.Background(), room.UserIDKey, u1.ID)
-					api.SubscribeOnlineStatus(ctx, statusChanges, protoStatusChanges)
+					api.SubscribeOnlineStatus(ctx, heartbeat, statusChanges, protoStatusChanges)
 				}()
 				go func() {
 					statusChanges <- statusChange
@@ -1190,14 +1198,21 @@ var _ = Describe("API", func() {
 			It("should set user status to offline", func(done Done) {
 				statusChanges := make(chan *signaling.OnlineStatus)
 				protoStatusChanges := make(chan *protos.OnlineStatus)
+				heartbeat := make(chan *protos.Heartbeat)
 				statusChange := &signaling.OnlineStatus{
 					ID:     u2.ID,
 					Online: false,
 				}
+				go func() {
+					for {
+						heartbeat <- &protos.Heartbeat{Beat: true}
+						time.Sleep(time.Second * 1)
+					}
+				}()
 				ctx := context.WithValue(context.Background(), room.UserIDKey, u1.ID)
 				ctx, cancel := context.WithCancel(ctx)
 				go func() {
-					api.SubscribeOnlineStatus(ctx, statusChanges, protoStatusChanges)
+					api.SubscribeOnlineStatus(ctx, heartbeat, statusChanges, protoStatusChanges)
 				}()
 				go func() {
 					statusChanges <- statusChange
@@ -1217,17 +1232,62 @@ var _ = Describe("API", func() {
 			}, 0.3)
 		})
 
-		When("other user online status change", func() {
-			It("should receive status change event", func(done Done) {
+		When("heartbeat stop", func() {
+			It("should set user status to offline", func(done Done) {
 				statusChanges := make(chan *signaling.OnlineStatus)
 				protoStatusChanges := make(chan *protos.OnlineStatus)
+				heartbeat := make(chan *protos.Heartbeat)
 				statusChange := &signaling.OnlineStatus{
 					ID:     u2.ID,
 					Online: false,
 				}
 				go func() {
+					for {
+						time.Sleep(time.Second * 12)
+						heartbeat <- &protos.Heartbeat{Beat: true}
+					}
+				}()
+				ctx := context.WithValue(context.Background(), room.UserIDKey, u1.ID)
+				ctx, cancel := context.WithCancel(ctx)
+				go func() {
+					api.SubscribeOnlineStatus(ctx, heartbeat, statusChanges, protoStatusChanges)
+				}()
+				go func() {
+					statusChanges <- statusChange
+				}()
+				go func() {
+					<-api.Onlines
+					<-api.Onlines
+				}()
+				<-protoStatusChanges
+				cancel()
+				u, err := api.GetUser(
+					context.Background(),
+					&protos.GetUserParam{Id: u1.ID})
+				Expect(err).To(BeNil())
+				Expect(u.Online).To(BeFalse())
+				close(done)
+			}, 6)
+		})
+
+		When("other user online status change", func() {
+			It("should receive status change event", func(done Done) {
+				statusChanges := make(chan *signaling.OnlineStatus)
+				protoStatusChanges := make(chan *protos.OnlineStatus)
+				heartbeat := make(chan *protos.Heartbeat)
+				statusChange := &signaling.OnlineStatus{
+					ID:     u2.ID,
+					Online: false,
+				}
+				go func() {
+					for {
+						heartbeat <- &protos.Heartbeat{Beat: true}
+						time.Sleep(time.Second * 12)
+					}
+				}()
+				go func() {
 					ctx := context.WithValue(context.Background(), room.UserIDKey, u1.ID)
-					api.SubscribeOnlineStatus(ctx, statusChanges, protoStatusChanges)
+					api.SubscribeOnlineStatus(ctx, heartbeat, statusChanges, protoStatusChanges)
 				}()
 				go func() {
 					statusChanges <- statusChange
@@ -1247,13 +1307,20 @@ var _ = Describe("API", func() {
 			It("should not receive status change event", func(done Done) {
 				statusChanges := make(chan *signaling.OnlineStatus)
 				protoStatusChanges := make(chan *protos.OnlineStatus)
+				heartbeat := make(chan *protos.Heartbeat)
+				go func() {
+					for {
+						heartbeat <- &protos.Heartbeat{Beat: true}
+						time.Sleep(time.Second * 12)
+					}
+				}()
 				statusChange := &signaling.OnlineStatus{
 					ID:     u1.ID,
 					Online: false,
 				}
 				go func() {
 					ctx := context.WithValue(context.Background(), room.UserIDKey, u1.ID)
-					api.SubscribeOnlineStatus(ctx, statusChanges, protoStatusChanges)
+					api.SubscribeOnlineStatus(ctx, heartbeat, statusChanges, protoStatusChanges)
 				}()
 				go func() {
 					statusChanges <- statusChange

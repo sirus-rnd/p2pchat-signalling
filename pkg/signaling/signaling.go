@@ -83,6 +83,7 @@ type ISignaling interface {
 	) error
 	SubscribeOnlineStatus(
 		ctx context.Context,
+		heartbeat <-chan *protos.Heartbeat,
 		statusChanges <-chan *OnlineStatus,
 		protoStatusChanges chan<- *protos.OnlineStatus,
 	) error
