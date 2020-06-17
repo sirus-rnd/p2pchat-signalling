@@ -1,9 +1,6 @@
-# Console API
+# P2P Chat Signaling service
 
-[![pipeline status](https://gitlab.com/quantum-hive/cloud-centrals/console-api/badges/develop/pipeline.svg)](https://gitlab.com/quantum-hive/cloud-centrals/console-api/-/commits/develop)
-[![coverage report](https://gitlab.com/quantum-hive/cloud-centrals/console-api/badges/develop/coverage.svg)](https://gitlab.com/quantum-hive/cloud-centrals/console-api/-/commits/develop)
-
-expose admin console functionality as a webservice
+service to manage chatting rooms & user access to it
 
 ## Development
 
@@ -26,9 +23,17 @@ make init # (optional) for first build only
 make run
 ```
 
+## Test
+
+this service are test using `ginkgo` BDD test kit, make sure you already init the project before make testing
+
+```bash
+make test
+```
+
 ## GRPC server
 
-to consume grpc service we need to run GRPC web proxy
+to consume grpc service to web we need to run GRPC web proxy
 
 ```bash
 grpcwebproxy --allow_all_origins --run_tls_server=false --use_websockets --backend_tls=false --backend_addr=localhost:8053 --server_http_debug_port=9012
