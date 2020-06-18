@@ -7,6 +7,6 @@ WORKDIR /root
 RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
 
 # copy binary file
-COPY console /root
+COPY signalling /root
 
-ENTRYPOINT [ "/root/console" ]
+ENTRYPOINT [ "/root/signalling" ]
