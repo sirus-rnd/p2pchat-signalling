@@ -1223,16 +1223,17 @@ var _ = Describe("API", func() {
 				}()
 				<-protoStatusChanges
 				cancel()
+				time.Sleep(time.Millisecond * 100)
 				u, err := api.GetUser(
 					context.Background(),
 					&protos.GetUserParam{Id: u1.ID})
 				Expect(err).To(BeNil())
 				Expect(u.Online).To(BeFalse())
 				close(done)
-			}, 0.3)
+			}, 0.5)
 		})
 
-		When("heartbeat stop", func() {
+		When("heartbeat not send in 5 second", func() {
 			It("should set user status to offline", func(done Done) {
 				statusChanges := make(chan *signaling.OnlineStatus)
 				protoStatusChanges := make(chan *protos.OnlineStatus)
@@ -1242,13 +1243,10 @@ var _ = Describe("API", func() {
 					Online: false,
 				}
 				go func() {
-					for {
-						time.Sleep(time.Second * 12)
-						heartbeat <- &protos.Heartbeat{Beat: true}
-					}
+					time.Sleep(time.Second * 6)
+					heartbeat <- &protos.Heartbeat{Beat: true}
 				}()
 				ctx := context.WithValue(context.Background(), room.UserIDKey, u1.ID)
-				ctx, cancel := context.WithCancel(ctx)
 				go func() {
 					api.SubscribeOnlineStatus(ctx, heartbeat, statusChanges, protoStatusChanges)
 				}()
@@ -1260,14 +1258,14 @@ var _ = Describe("API", func() {
 					<-api.Onlines
 				}()
 				<-protoStatusChanges
-				cancel()
+				time.Sleep((time.Second * 5) + (time.Millisecond * 100))
 				u, err := api.GetUser(
 					context.Background(),
 					&protos.GetUserParam{Id: u1.ID})
 				Expect(err).To(BeNil())
 				Expect(u.Online).To(BeFalse())
 				close(done)
-			}, 6)
+			}, 7)
 		})
 
 		When("other user online status change", func() {
