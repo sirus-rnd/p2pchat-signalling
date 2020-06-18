@@ -1,6 +1,8 @@
 # P2P Chat Signaling service
 
-service to manage chatting rooms & user access to it
+![](https://github.com/sirus-rnd/p2pchat-signalling/workflows/deploy/badge.svg)
+
+Service to manage chatting rooms & user access to it
 
 ## Development
 

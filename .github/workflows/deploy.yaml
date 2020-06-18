@@ -18,7 +18,7 @@ jobs:
     - uses: actions/checkout@v2
     - run: make init
     - run: make test
-    - run: sed -i "s/--build-sha--/${{ GITHUB_SHA }}/g" cmd/version.go
+    - run: sed -i "s/--build-sha--/$GITHUB_SHA/g" cmd/version.go
     - run: make build-cross-linux 
     - uses: actions/upload-artifact@v1
       with:
