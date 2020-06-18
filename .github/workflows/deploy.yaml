@@ -35,6 +35,7 @@ jobs:
     - uses: actions/download-artifact@v1
       with:
         name: binary
+    - run: cp binary/* .
     - uses: docker/build-push-action@v1
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
