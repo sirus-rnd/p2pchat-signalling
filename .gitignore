@@ -18,7 +18,7 @@ bindata.go
 *.so
 *.dylib
 *.tmp
-cloud-central
+signalling
 e2e.*
 
 # System Files

@@ -38,7 +38,6 @@ proto:
 	protoc --proto_path protos/ --go_out=plugins=grpc:protos protos/signalling.proto
 
 build-cross-linux:
-	make init
 	make lint
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o $(BINARY_NAME_CROSS_LINUX) -v
 

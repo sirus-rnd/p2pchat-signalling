@@ -6,7 +6,8 @@ WORKDIR /root
 # update certificates
 RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
 
-# copy binary file
-COPY signalling /root
+# copy binary file & make sure its executable
+COPY signalling .
+RUN chmod +x signalling
 
 ENTRYPOINT [ "/root/signalling" ]
