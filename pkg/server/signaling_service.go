@@ -184,6 +184,10 @@ func (s *SignalingService) SubscribeSDPCommand(
 		close(commands)
 		close(sdps)
 	}()
+	// uggly patch to ACK request
+	// send ack to subscriber to trigger on header resolver
+	srv.Send(&protos.SDP{})
+	// get real SDP response
 	for sdp := range sdps {
 		err := srv.Send(sdp)
 		if err != nil {
